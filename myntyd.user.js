@@ -19,7 +19,7 @@
         alert("Cafetaria budget is nu: " + cafetariaBudget.innerText);
       } else {
         console.log("Cafetaria budget is nu: " + cafetariaBudget.innerText);
-        console.log("last refresh: " + Date.now());
+        console.log("last refresh: " + new Date());
         setTimeout(function(){ 
             document.querySelector("input[type='image'][alt='Samenvatting']").click();
         }, 60*1000);
