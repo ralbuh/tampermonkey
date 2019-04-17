@@ -16,9 +16,13 @@
         .nextSibling
         .nextSibling
       if (cafetariaBudget.innerText > 0) {
-       alert("Cafetaria budget is nu: " + cafetariaBudget.innerText);
+        alert("Cafetaria budget is nu: " + cafetariaBudget.innerText);
       } else {
-       setTimeout(function(){ document.querySelector("input[type='image'][alt='Samenvatting']").click(); }, 60*1000);
+        console.log("Cafetaria budget is nu: " + cafetariaBudget.innerText);
+        console.log("last refresh: " + Date.now());
+        setTimeout(function(){ 
+            document.querySelector("input[type='image'][alt='Samenvatting']").click();
+        }, 60*1000);
       }
     }
 })();
