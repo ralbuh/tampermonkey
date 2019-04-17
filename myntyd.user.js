@@ -18,7 +18,7 @@
       if (cafetariaBudget.innerText > 0) {
        alert("Cafetaria budget is nu: " + cafetariaBudget.innerText);
       } else {
-       setTimeout(function(){ location.reload(); }, 60*1000);
+       setTimeout(function(){ document.querySelector("input[type='image'][alt='Samenvatting']").click(); }, 60*1000);
       }
     }
 })();
