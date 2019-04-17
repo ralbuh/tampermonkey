@@ -14,7 +14,7 @@
       var cafetariaBudget = [...document.querySelectorAll('td')]
         .filter(it => it.innerText == "Cafetariabudget")[0]
         .nextSibling
-        .nextSibling)
+        .nextSibling
       if (cafetariaBudget.innerText > 0) {
        alert("Cafetaria budget is nu: " + cafetariaBudget.innerText);
       } else {
