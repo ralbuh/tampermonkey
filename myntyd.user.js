@@ -7,6 +7,17 @@
 // @match        https://inquisitive.myntyd.nl/profiel.php
 // @grant        none
 // ==/UserScript==
+function notifyMe(text) {
+  if (Notification.permission !== "granted") {
+      Notification.requestPermission();
+  } else {
+    var notification = new Notification('Cafetaria budget', {
+      body: text,
+      requireInteraction: true
+    });
+  }
+}
+
 
 (function() {
     'use strict';
@@ -15,12 +26,16 @@
         .filter(it => it.innerText == "Cafetariabudget")[0]
         .nextSibling
         .nextSibling
+      var currentText = "Cafetaria budget is nu:" + cafetariaBudget.innerText;
+
       if (cafetariaBudget.innerText > 0) {
-        alert("Cafetaria budget is nu: " + cafetariaBudget.innerText);
+        notifyMe(currentText);
+        //alert(currentText);
       } else {
-        console.log("Cafetaria budget is nu: " + cafetariaBudget.innerText);
+        console.log(currentText);
         console.log("last refresh: " + new Date());
-        setTimeout(function(){ 
+        //notifyMe(currentText);
+        setTimeout(function(){
             document.querySelector("input[type='image'][alt='Samenvatting']").click();
         }, 60*1000);
       }
