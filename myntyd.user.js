@@ -11,7 +11,7 @@
 (function() {
     'use strict';
     if ([...document.querySelectorAll('td')].some(it => it.innerText == "Cafetariabudget")) {
-      val cafetariaBudget = [...document.querySelectorAll('td')]
+      var cafetariaBudget = [...document.querySelectorAll('td')]
         .filter(it => it.innerText == "Cafetariabudget")[0]
         .nextSibling
         .nextSibling)
