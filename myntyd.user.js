@@ -27,8 +27,9 @@ function notifyMe(text) {
         .nextSibling
         .nextSibling
       var currentText = "Cafetaria budget is nu:" + cafetariaBudget.innerText;
+      var currentBudget = parseFloat(cafetariaBudget.innerText.replace('€ ',''));
 
-      if (cafetariaBudget.innerText > 0) {
+      if (currentBudget > 0) {
         notifyMe(currentText);
         //alert(currentText);
       } else {
