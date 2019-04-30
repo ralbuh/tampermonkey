@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Myntyd check if cafetariabudget gets increased > 0
-// @namespace    http://tampermonkey.net/
-// @version      0.1
-// @description  try to take over the world!
-// @author       You
+// @namespace    ttps://github.com/ralbuh/tampermonkey
+// @version      1.0
+// @description  Check for new cafetariabudget
+// @author       Ralbuh
 // @match        https://inquisitive.myntyd.nl/profiel.php
 // @grant        none
 // ==/UserScript==
