@@ -4,7 +4,7 @@
 // @version      1.0
 // @description  Marktplaats add delete all notifications button
 // @author       Ralbuh
-// @match        marktplaats.nl/notifications
+// @match        https://www.marktplaats.nl/notifications
 // @grant        none
 // ==/UserScript==
 
