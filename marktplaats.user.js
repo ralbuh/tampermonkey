@@ -15,12 +15,10 @@ function deleteAll() {
 
 (function() {
     'use strict';
-		
 	var button=document.createElement("input");
 	button.type="button";
 	button.value="Delete all";
 	button.onclick = deleteAll;
 	button.setAttribute("style", "font-size:18px;position:absolute;top:120px;right:40px;");
-	document.body.appendChild(button); 
-	
+	document.body.appendChild(button);
 })();
