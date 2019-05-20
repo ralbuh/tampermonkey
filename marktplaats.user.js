@@ -19,6 +19,6 @@ function deleteAll() {
 	button.type="button";
 	button.value="Delete all";
 	button.onclick = deleteAll;
-	button.setAttribute("style", "font-size:18px;position:absolute;top:120px;right:40px;");
+	button.setAttribute("style", "font-size:18px;position:absolute;bottom:0px;right:0px;");
 	document.body.appendChild(button);
 })();
