@@ -13,6 +13,7 @@
     [...document.querySelectorAll('a')]
         .filter(link => link.href.includes('22pixx') || link.href.includes('imgprime'))
         .forEach(link => link.href = link.href
+                 .replace('ia-o','ib-o')
                  .replace('x-o','y-o')
                  .replace('a-i','b-i')
                  .replace('imga-u','imgb-u'));
