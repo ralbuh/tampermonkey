@@ -28,4 +28,3 @@ function downloadAll() {
 	button.setAttribute("style", "font-size:18px;position:absolute;bottom:0px;right:0px;");
 	document.body.appendChild(button);
 })();
-
