@@ -10,10 +10,10 @@
 
 function downloadAll() {
 	[...document.querySelectorAll('.fotoalbumimages.images > img')].forEach(img => {
-        console.log(img.src);
+//        console.log(img.src);
         var downloadUrl = img.src.replace("formaat/klein","formaat/groot");
         var filename = img.src.match(/mediajpg\/media\/([0-9]*)/i)[1];
-        var localName = ;
+        var localName = `${filename}.jpg`;
         var arg = { url: downloadUrl, name: localName };
         GM_download(arg);
     });
