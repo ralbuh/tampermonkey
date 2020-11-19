@@ -21,13 +21,24 @@ function downloadAllLoaded() {
     });
 }
 
+function getDateFromMetaData(fotoId, func) {
+   		$.post("/ouder/fotoalbum/fotometa", {
+			id: fotoId
+        },
+        function(data) { let date = data[0].MEDIA_DAG;
+                        func(date);
+                       }
+		)
+}
+
 function downloadAll() {
     fotoalbumViewer.albums[0].forEach(id => {
         var downloadUrl = `https://blos.flexkids.nl/ouder/media/download/media/${id}`;
-        var localName = `${id}.jpg`;
-        var arg = { url: downloadUrl, name: localName }
-        GM_download(arg);
-
+        var date = getDateFromMetaData(id, function(date){
+            var localName = `${date} ${id}.jpg`;
+            var arg = { url: downloadUrl, name: localName }
+            GM_download(arg);
+        });
     });
 }
 
