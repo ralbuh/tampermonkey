@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Blos flexkids download all pictures
+// @name         flexkids
 // @namespace    https://github.com/ralbuh/tampermonkey
 // @version      0.1
 // @description  Blos flexkids download all pictures from fotoalbum page
