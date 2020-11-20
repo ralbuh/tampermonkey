@@ -30,8 +30,9 @@ function fetchDateFromMetaData(fotoId, func) {
 			body: `id=${fotoId}`
 		})
 		.then(res => res.json())
-		.then(function(res) {
-			console.log(res)
+		.then(function(data) {
+			let date = data[0].MEDIA_DAG;
+			func(date);
 		})
 }
 
