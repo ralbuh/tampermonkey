@@ -8,6 +8,7 @@
 // @grant        GM_download
 // ==/UserScript==
 
+// This one uses jquery post method
 function getDateFromMetaData(fotoId, func) {
 	$.post("/ouder/fotoalbum/fotometa", {
 			id: fotoId
@@ -19,10 +20,25 @@ function getDateFromMetaData(fotoId, func) {
 	)
 }
 
+// This one uses js native fetch with promise
+function fetchDateFromMetaData(fotoId, func) {
+	fetch("/ouder/fotoalbum/fotometa", {
+			method: 'post',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded;'
+			},
+			body: `id=${fotoId}`
+		})
+		.then(res => res.json())
+		.then(function(res) {
+			console.log(res)
+		})
+}
+
 function downloadAll() {
 	fotoalbumViewer.albums[0].forEach(id => {
 		let downloadUrl = `https://blos.flexkids.nl/ouder/media/download/media/${id}`;
-		let date = getDateFromMetaData(id, function(date) {
+		let date = fetchDateFromMetaData(id, function(date) {
 			GM_download({
 				url: downloadUrl,
 				name: `${date} ${id}.jpg`
