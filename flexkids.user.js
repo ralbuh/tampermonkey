@@ -20,11 +20,9 @@ function getDateFromMetaData(fotoId, func) {
 
 function downloadAll() {
     fotoalbumViewer.albums[0].forEach(id => {
-        var downloadUrl = `https://blos.flexkids.nl/ouder/media/download/media/${id}`;
-        var date = getDateFromMetaData(id, function(date){
-            var localName = `${date} ${id}.jpg`;
-            var arg = { url: downloadUrl, name: localName }
-            GM_download(arg);
+        let downloadUrl = `https://blos.flexkids.nl/ouder/media/download/media/${id}`;
+        let date = getDateFromMetaData(id, function(date){
+            GM_download({ url: downloadUrl, name: `${date} ${id}.jpg` });
         });
     });
 }
