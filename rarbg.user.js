@@ -12,11 +12,12 @@
     'use strict';
     [...document.querySelectorAll('a')]
         .filter(link => link.href.includes('22pixx') || link.href.includes('imgprime'))
-        .forEach(link => link.href = link.href
+        .forEach(filteredLink => { filteredLink.href = filteredLink.href
                  .replace('ia-o','ib-o')
+                 .replace('x-r','ib-r')
                  .replace('x-o','y-o')
                  .replace('a-i','b-i')
-                 .replace('imga-u','imgb-u'));
+                 .replace('imga-u','imgb-u')});
 
     /* version 2
     document.querySelectorAll('a').forEach(function(link) {
