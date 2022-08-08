@@ -49,7 +49,7 @@ function bidLogic() {
             var minBidInt = parseInt(minBid.textContent);
             if(minBidInt<=maxBid){
                 bid.value = minBid.textContent;
-                //button.click();
+                button.click();
                 abortTimer();
             }
         }
