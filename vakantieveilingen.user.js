@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         vakantieveilingen buy
+// @name         vakantieveilingen auto buy
 // @namespace    http://vakantieveilingen.nl/
 // @version      1.3.4
-// @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
+// @updateURL    https://github.com/kemalizing/tamper-scripts/raw/master/vv.user.js
 // @description  vakantieveilingen.nl auto bid
 // @author       You
 // @include      *vakantieveilingen.nl*
@@ -15,17 +15,6 @@ var maxBid = 0;
 var winners = ""
 var avgWinner, minWinner = null;
 var bidName, bidKey, winnersKey, maxBidKey, minWinnerKey, vv_maxBid, tid;
-
-function hashCode(str) {
-    var hash = 0, i, chr;
-    if (str.length === 0) return hash;
-    for (i = 0; i < str.length; i++) {
-        chr = str.charCodeAt(i);
-        hash = ((hash << 5) - hash) + chr;
-        //hash |= 0; // Convert to 32bit integer
-    }
-    return hash;
-};
 
 function bidLogic() {
     //console.log("maxBidKey:"+maxBidKey+" jq disptime:"+$("#biddingBlock .display-time-value").textContent);
@@ -61,7 +50,7 @@ function bidLogic() {
             winners = await GM.getValue(winnersKey, winners);
             var winnerArr = [];
             if(winners != "") winnerArr = winners.split(", ");
-            if(winnerArr.length>15) winnerArr = winnerArr.slice(winnerArr.length-15, winnerArr.length);
+            //if(winnerArr.length>15) winnerArr = winnerArr.slice(winnerArr.length-15, winnerArr.length);
 
             var currentHighestBid = parseInt(document.querySelector('div[data-aq="highest-bid"] > h3').textContent.replace('€','').trim());
             var currentWinner = document.querySelector('h2.MuiTypography-big-extra').textContent;
@@ -79,6 +68,17 @@ function bidLogic() {
         //location.reload(); // not needed anymore since page automatically reloads
         abortTimer();
     }
+}
+
+function hashCode(str) {
+    var hash = 0, i, chr;
+    if (str.length === 0) return hash;
+    for (i = 0; i < str.length; i++) {
+        chr = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + chr;
+        //hash |= 0; // Convert to 32bit integer
+    }
+    return hash;
 }
 
 function average(elmt){
@@ -125,12 +125,10 @@ function setMaxBid() {
 
     var newHTML = document.createElement ('h3');
     newHTML.innerHTML = `
-    <div id="vv_note" style="color:red; background-color:rgb(52 147 0 / 50%); position:fixed; top:150px; right:100px; z-index:1111">
-      <p style="opacity: 1">
-        <strong>WILL BUY UP UNTIL € <input id="vv_maxBid" size=1 value="${maxBid}"/></strong>
-        <br>
-        <small>Min won price: ${minWinner} Avg won price: ${avgWinner}<br>latest won prices: ${winners}</small>
-      </p>
+    <div id="vv_note" style="color:white; background-color:rgb(0 103 145 / 80%); border-radius: 20px; padding: 10px 20px; position:fixed; bottom:50px; right:50px; z-index:1111;">
+      <p><strong>Max auto bid € <input style="background: transparent; color: white; border: none;" id="vv_maxBid" size=1 value="${maxBid}"/></strong></p>
+      <p style="max-width: 400px;"><small>Min won price: ${minWinner} Avg won price: ${avgWinner}
+      </br>latest won prices: ${winners}</small></p>
     </div>`;
     document.body.appendChild (newHTML);
 
