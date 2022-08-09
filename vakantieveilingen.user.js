@@ -11,18 +11,18 @@
 // @require      https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js
 // ==/UserScript==
 
-var maxBid = 0;
-var winners = ""
-var avgWinner, minWinner = null;
-var bidName, bidKey, winnersKey, maxBidKey, minWinnerKey, vv_maxBid, tid;
+let maxBid = 0;
+let winners = ""
+let avgWinner, minWinner = null;
+let bidName, bidKey, winnersKey, maxBidKey, minWinnerKey, vv_maxBid, tid;
 
 function bidLogic() {
     //console.log("maxBidKey:"+maxBidKey+" jq disptime:"+$("#biddingBlock .display-time-value").textContent);
-    var refreshLinks = document.querySelector('a[data-aq="reopen-auction"]'); // this one only appears after the auction has closed
-    var bid = document.querySelector("input#bid"); // input field for user bid
-    var button = document.querySelector('button[data-aq="place-bid"]'); // bid button for user bid
-    var minBid = document.querySelectorAll('button[data-aq="fastbid-button"]')[1]; // second fastbid button underneath the user bid input field
-    var timer = document.querySelector('div.timer-countdown-label'); // this one only appears during last minute (sub 60 seconds countdown)
+    let refreshLinks = document.querySelector('a[data-aq="reopen-auction"]'); // this one only appears after the auction has closed
+    let bid = document.querySelector("input#bid"); // input field for user bid
+    let button = document.querySelector('button[data-aq="place-bid"]'); // bid button for user bid
+    let minBid = document.querySelectorAll('button[data-aq="fastbid-button"]')[1]; // second fastbid button underneath the user bid input field
+    let timer = document.querySelector('div.timer-countdown-label'); // this one only appears during last minute (sub 60 seconds countdown)
 
     if (button){
         $("#vv_note").show();
@@ -35,7 +35,7 @@ function bidLogic() {
         //setCookie(location, minBid, 1);
 
         if(timer.textContent == "01" ){
-            var minBidInt = parseInt(minBid.textContent);
+            let minBidInt = parseInt(minBid.textContent);
             if(minBidInt<=maxBid){
                 bid.value = minBid.textContent;
                 button.click();
@@ -48,12 +48,12 @@ function bidLogic() {
         (async () => {
 
             winners = await GM.getValue(winnersKey, winners);
-            var winnerArr = [];
+            let winnerArr = [];
             if(winners != "") winnerArr = winners.split(", ");
             //if(winnerArr.length>15) winnerArr = winnerArr.slice(winnerArr.length-15, winnerArr.length);
 
-            var currentHighestBid = parseInt(document.querySelector('div[data-aq="highest-bid"] > h3').textContent.replace('€','').trim());
-            var currentWinner = document.querySelector('h2.MuiTypography-big-extra').textContent;
+            let currentHighestBid = parseInt(document.querySelector('div[data-aq="highest-bid"] > h3').textContent.replace('€','').trim());
+            let currentWinner = document.querySelector('h2.MuiTypography-big-extra').textContent;
             console.log(currentHighestBid);
             winnerArr.push(currentHighestBid);
             winners = winnerArr.join(", ");
@@ -71,7 +71,7 @@ function bidLogic() {
 }
 
 function hashCode(str) {
-    var hash = 0, i, chr;
+    let hash = 0, i, chr;
     if (str.length === 0) return hash;
     for (i = 0; i < str.length; i++) {
         chr = str.charCodeAt(i);
@@ -82,8 +82,8 @@ function hashCode(str) {
 }
 
 function average(elmt){
-    var sum = 0;
-    for( var i = 0; i < elmt.length; i++ ){
+    let sum = 0;
+    for( let i = 0; i < elmt.length; i++ ){
         sum += parseInt( elmt[i], 10 ); //don't forget to add the base
     }
 
@@ -96,7 +96,7 @@ function abortTimer() {
 }
 
 function setMaxBid() {
-    var newMax = parseInt(vv_maxBid.value);
+    let newMax = parseInt(vv_maxBid.value);
     if(!isNaN(newMax)){
         maxBid = newMax;
         GM.setValue(maxBidKey, maxBid).then();
@@ -116,21 +116,24 @@ function setMaxBid() {
     maxBidKey = bidKey+"_maxBid";
     minWinnerKey = bidKey+"_minWinner";
 
+    let injectedAutoBuyBox = document.createElement('div');
+    injectedAutoBuyBox.id = "vv_note";
+    injectedAutoBuyBox.style.cssText = "font-size: 1.2em; color:white; background-color:rgb(0 103 145 / 80%); border-radius: 20px; padding: 10px 20px; position:fixed; bottom:50px; right:50px; z-index:1111;";
+    injectedAutoBuyBox.innerHTML = `<p><b>Max auto bid € <input style="font-size: 1em;font-weight: bold;background: transparent;color: white;border: none;" id="vv_maxBid" size=1 value="${maxBid}"/></b></p>`;
+    document.body.appendChild(injectedAutoBuyBox);
+
     maxBid = await GM.getValue(maxBidKey, maxBid);
     winners = await GM.getValue(winnersKey, winners);
     minWinner = await GM.getValue(minWinnerKey, minWinner);
-    var winnerArr = winners.split(", ");
-    console.log("winnerArr:"+winnerArr+" fixed:"+average(winnerArr)+" winners:"+winners);
-    avgWinner = average(winnerArr).toFixed();
-
-    var newHTML = document.createElement ('div');
-    newHTML.innerHTML = `
-    <div id="vv_note" style="font-size: 1.2em; color:white; background-color:rgb(0 103 145 / 80%); border-radius: 20px; padding: 10px 20px; position:fixed; bottom:50px; right:50px; z-index:1111;">
-      <p><b>Max auto bid € <input style="font-size: 1em;font-weight: bold;background: transparent;color: white;border: none;" id="vv_maxBid" size=1 value="${maxBid}"/></b></p>
-      <p style="max-width: 400px;"><small>Min won price: ${minWinner} Avg won price: ${avgWinner}
-      </br>latest won prices: ${winners}</small></p>
-    </div>`;
-    document.body.appendChild (newHTML);
+    if (minWinner) {
+        let winnerArr = winners.split(", ");
+        //console.log(`winnerArr: ${winnerArr} fixed: ${average(winnerArr)} winners: ${winners}`);
+        avgWinner = average(winnerArr).toFixed();
+        let statisticsObj = document.createElement("p");
+        statisticsObj.style.cssText="max-width: 400px;";
+        statisticsObj.innerHTML = `<small>Min won price: ${minWinner} Avg won price: ${avgWinner}</br>latest won prices: ${winners}</small>`;
+        injectedAutoBuyBox.append(statisticsObj);
+    }
 
     vv_maxBid = document.getElementById('vv_maxBid');
     vv_maxBid.addEventListener ("input", setMaxBid , false);
