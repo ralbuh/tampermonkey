@@ -123,7 +123,7 @@ function setMaxBid() {
     console.log("winnerArr:"+winnerArr+" fixed:"+average(winnerArr)+" winners:"+winners);
     avgWinner = average(winnerArr).toFixed();
 
-    var newHTML = document.createElement ('h3');
+    var newHTML = document.createElement ('div');
     newHTML.innerHTML = `
     <div id="vv_note" style="font-size: 1.2em; color:white; background-color:rgb(0 103 145 / 80%); border-radius: 20px; padding: 10px 20px; position:fixed; bottom:50px; right:50px; z-index:1111;">
       <p><b>Max auto bid € <input style="font-size: 1em;font-weight: bold;background: transparent;color: white;border: none;" id="vv_maxBid" size=1 value="${maxBid}"/></b></p>
