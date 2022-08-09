@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         vakantieveilingen auto buy
 // @namespace    http://vakantieveilingen.nl/
-// @version      1.3.4
-// @updateURL    https://github.com/kemalizing/tamper-scripts/raw/master/vv.user.js
+// @version      1.5.0
+// @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @description  vakantieveilingen.nl auto bid
 // @author       You
 // @include      *vakantieveilingen.nl*
@@ -137,5 +137,3 @@ function setMaxBid() {
 
     tid = setInterval(bidLogic, 500);
 })();
-
-// org: https://github.com/kemalizing/tamper-scripts/raw/master/vv.user.js
