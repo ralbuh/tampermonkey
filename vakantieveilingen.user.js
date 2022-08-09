@@ -125,8 +125,8 @@ function setMaxBid() {
 
     var newHTML = document.createElement ('h3');
     newHTML.innerHTML = `
-    <div id="vv_note" style="color:white; background-color:rgb(0 103 145 / 80%); border-radius: 20px; padding: 10px 20px; position:fixed; bottom:50px; right:50px; z-index:1111;">
-      <p><strong>Max auto bid € <input style="background: transparent; color: white; border: none;" id="vv_maxBid" size=1 value="${maxBid}"/></strong></p>
+    <div id="vv_note" style="font-size: 1.2em; color:white; background-color:rgb(0 103 145 / 80%); border-radius: 20px; padding: 10px 20px; position:fixed; bottom:50px; right:50px; z-index:1111;">
+      <p><b>Max auto bid € <input style="font-size: 1em;font-weight: bold;background: transparent;color: white;border: none;" id="vv_maxBid" size=1 value="${maxBid}"/></b></p>
       <p style="max-width: 400px;"><small>Min won price: ${minWinner} Avg won price: ${avgWinner}
       </br>latest won prices: ${winners}</small></p>
     </div>`;
