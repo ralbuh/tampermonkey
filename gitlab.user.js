@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         gitlab merge all merge requests
 // @namespace    https://github.com/ralbuh/tampermonkey
-// @version      1.0.5
+// @version      1.0.6
 // @downloadURL  https://github.com/ralbuh/tampermonkey/raw/master/gitlab.user.js
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/gitlab.user.js
 // @description  Add merge all button for merge request page, will merge everything with gitlab api v4 using csrf-token
@@ -45,9 +45,10 @@ function mergeAll() {
 
     const mergeAllButton = `
         <div class="gl-ml-3">
-            <a class="btn gl-button btn-confirm merge-all-btn" onclick="mergeAll()">Merge All</a>
+            <a class="btn gl-button btn-confirm merge-all-btn">Merge All</a>
         </div>
     `;
 
     document.querySelector('.filter-dropdown-container').insertAdjacentHTML("afterend", mergeAllButton);
+    document.querySelector('.merge-all-btn').onclick = mergeAll;
 })();
