@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name         gitlab merge all merge requests
 // @namespace    https://github.com/ralbuh/tampermonkey
-// @version      1.0.0
+// @version      1.0.1
+// @downloadURL  https://github.com/ralbuh/tampermonkey/raw/master/gitlab.user.js
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/gitlab.user.js
 // @description  Add merge all button for merge request page, will merge everything with gitlab api v4 using csrf-token
 // @author       ralbuh
