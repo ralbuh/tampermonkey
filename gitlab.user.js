@@ -1,12 +1,12 @@
 // ==UserScript==
 // @name         gitlab merge all merge requests
 // @namespace    https://github.com/ralbuh/tampermonkey
-// @version      1.0.1
+// @version      1.0.2
 // @downloadURL  https://github.com/ralbuh/tampermonkey/raw/master/gitlab.user.js
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/gitlab.user.js
 // @description  Add merge all button for merge request page, will merge everything with gitlab api v4 using csrf-token
 // @author       ralbuh
-// @include      *gitlab*merge_requests*
+// @match        *gitlab*merge_requests*
 // ==/UserScript==
 
 function mergeAll() {
