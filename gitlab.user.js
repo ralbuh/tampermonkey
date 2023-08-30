@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         gitlab merge all merge requests
 // @namespace    https://github.com/ralbuh/tampermonkey
-// @version      1.0.6
+// @version      1.0.7
 // @downloadURL  https://github.com/ralbuh/tampermonkey/raw/master/gitlab.user.js
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/gitlab.user.js
 // @description  Add merge all button for merge request page, will merge everything with gitlab api v4 using csrf-token
@@ -32,11 +32,11 @@ function mergeAll() {
                     .then(mr => {
                         console.log(`Merged merge request: [/api/v4/projects/${project.id}/merge_requests/${mergeRequestID}/merge] with description: [${mr.description}]`)
                         console.log(mr)
+                        location.reload();
                     })
             })
     }
     )
-    location.reload();
 }
 
 
