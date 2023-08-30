@@ -9,11 +9,11 @@
 // ==/UserScript==
 
 function mergeAll() {
-    let csrfToken = document.querySelector('meta[name="csrf-token"]').content
-    let baseUrl = window.location.origin + '/'
+    let csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+    let baseUrl = window.location.origin + '/';
 
     document.querySelectorAll('li.merge-request .merge-request-title a').forEach(link => {
-        let splittedUrl = link.href.split('/-/merge_requests/')
+        let splittedUrl = link.href.split('/-/merge_requests/');
         let projectNamespace = splittedUrl[0].replace(baseUrl, '').trim();
         let mergeRequestID = splittedUrl[1];
 
@@ -31,6 +31,7 @@ function mergeAll() {
             })
     }
     )
+    location.reload();
 }
 
 
@@ -43,5 +44,5 @@ function mergeAll() {
         </div>
     `;
 
-    document.querySelector('.filter-dropdown-container').insertAdjacentHTML("afterend",mergeAllButton)
+    document.querySelector('.filter-dropdown-container').insertAdjacentHTML("afterend", mergeAllButton);
 })();
