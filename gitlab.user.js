@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         gitlab merge all merge requests
 // @namespace    https://github.com/ralbuh/tampermonkey
-// @version      1.1.0
+// @version      1.1.1
 // @downloadURL  https://github.com/ralbuh/tampermonkey/raw/master/gitlab.user.js
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/gitlab.user.js
 // @description  Add merge all and approve all button for merge request page, will merg/approve everything with gitlab api v4 using csrf-token
@@ -81,5 +81,5 @@ function approveAll() {
     document.querySelector('.filter-dropdown-container').insertAdjacentHTML("afterend", mergeAllButton);
     document.querySelector('.filter-dropdown-container').insertAdjacentHTML("afterend", approveAllButton);
     document.querySelector('.merge-all-btn').onclick = mergeAll;
-    document.querySelector('approve-all-btn').onclick = mergeAll;
+    document.querySelector('.approve-all-btn').onclick = approveAll;
 })();
