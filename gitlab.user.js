@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         gitlab merge all merge requests
 // @namespace    https://github.com/ralbuh/tampermonkey
-// @version      1.2.1
+// @version      1.2.2
 // @downloadURL  https://github.com/ralbuh/tampermonkey/raw/master/gitlab.user.js
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/gitlab.user.js
 // @description  Add merge all and approve all button for merge request page, will merg/approve everything with gitlab api v4 using csrf-token
@@ -74,12 +74,12 @@ function updateDescription() {
         let mergeRequestId = splittedUrl[1];
         let projectPathUri = encodeURIComponent(projectNamespace);
 
-        console.log(`Updating merge request: [/api/v4/projects/${projectPathUri}/merge_requests/${mergeRequestID}/merge]`)
+        console.log(`Updating merge request: [/api/v4/projects/${projectPathUri}/merge_requests/${mergeRequestId}/merge]`)
 
         fetch(`/api/v4/projects/${projectPathUri}/merge_requests/${mergeRequestId}?description=${encodeURIComponent(description)}`, { method: 'PUT', headers: { 'X-CSRF-TOKEN': csrfToken } })
             .then(res => res.json())
             .then(mr => {
-                console.log(`New title for merge request: [/api/v4/projects/${projectPathUri}/merge_requests/${mergeRequestID}] is: [${mr.description}]`)
+                console.log(`New title for merge request: [/api/v4/projects/${projectPathUri}/merge_requests/${mergeRequestId}] is: [${mr.description}]`)
                 // console.log(mr)
             })
     })
