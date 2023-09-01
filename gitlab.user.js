@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         gitlab merge all merge requests
 // @namespace    https://github.com/ralbuh/tampermonkey
-// @version      1.1.4
+// @version      1.2.0
 // @downloadURL  https://github.com/ralbuh/tampermonkey/raw/master/gitlab.user.js
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/gitlab.user.js
 // @description  Add merge all and approve all button for merge request page, will merg/approve everything with gitlab api v4 using csrf-token
@@ -20,22 +20,18 @@ function mergeAll() {
     document.querySelectorAll('li.merge-request .merge-request-title a').forEach(link => {
         let splittedUrl = link.href.split('/-/merge_requests/');
         let projectNamespace = splittedUrl[0].replace(baseUrl, '').trim();
-        let mergeRequestID = splittedUrl[1];
+        let mergeRequestId = splittedUrl[1];
+        let projectPathUri = encodeURIComponent(projectNamespace);
 
-        fetch(`/api/v4/projects/${encodeURIComponent(projectNamespace)}`)
+        console.log(`Merging merge request: [/api/v4/projects/${projectPathUri}/merge_requests/${mergeRequestId}/merge]`)
+
+        fetch(`/api/v4/projects/${projectPathUri}/merge_requests/${mergeRequestId}/merge`, { method: 'PUT', headers: { 'X-CSRF-TOKEN': csrfToken } })
             .then(res => res.json())
-            .then(project => {
-                console.log(`Merging merge request: [/api/v4/projects/${project.id}/merge_requests/${mergeRequestID}/merge] for project: [${project.name_with_namespace}]`)
-
-                fetch(`/api/v4/projects/${project.id}/merge_requests/${mergeRequestID}/merge`, { method: 'PUT', headers: { 'X-CSRF-TOKEN': csrfToken } })
-                    .then(res => res.json())
-                    .then(mr => {
-                        console.log(`Merged merge request: [/api/v4/projects/${project.id}/merge_requests/${mergeRequestID}/merge] with description: [${mr.description}]`)
-                        // console.log(mr)
-                    })
+            .then(mr => {
+                console.log(`Merged merge request: [/api/v4/projects/${projectPathUri}/merge_requests/${mergeRequestId}/merge] with description: [${mr.description}]`)
+                // console.log(mr)
             })
-    }
-    )
+    })
 }
 
 function approveAll() {
@@ -49,22 +45,44 @@ function approveAll() {
     document.querySelectorAll('li.merge-request .merge-request-title a').forEach(link => {
         let splittedUrl = link.href.split('/-/merge_requests/');
         let projectNamespace = splittedUrl[0].replace(baseUrl, '').trim();
-        let mergeRequestID = splittedUrl[1];
+        let mergeRequestId = splittedUrl[1];
+        let projectPathUri = encodeURIComponent(projectNamespace);
 
-        fetch(`/api/v4/projects/${encodeURIComponent(projectNamespace)}`)
+        console.log(`Approve merge request: [/api/v4/projects/${projectPathUri}/merge_requests/${mergeRequestId}/approve]`)
+
+        fetch(`/api/v4/projects/${projectPathUri}/merge_requests/${mergeRequestId}/approve`, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken } })
             .then(res => res.json())
-            .then(project => {
-                console.log(`Approve merge request: [/api/v4/projects/${project.id}/merge_requests/${mergeRequestID}/approve] for project: [${project.name_with_namespace}]`)
-
-                fetch(`/api/v4/projects/${project.id}/merge_requests/${mergeRequestID}/approve`, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken } })
-                    .then(res => res.json())
-                    .then(mr => {
-                        console.log(`Approved merge request: [/api/v4/projects/${project.id}/merge_requests/${mergeRequestID}/merge] with description: [${mr.description}]`)
-                        // console.log(mr)
-                    })
+            .then(mr => {
+                console.log(`Approved merge request: [/api/v4/projects/${projectPathUri}/merge_requests/${mergeRequestId}/merge] with description: [${mr.description}]`)
+                // console.log(mr)
             })
+    })
+}
+
+function UpdateDescription() {
+    let description = prompt("Please enter the new description for the merge requests");
+    if (description != null) {
+        return;
     }
-    )
+
+    let csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+    let baseUrl = window.location.origin + '/';
+
+    document.querySelectorAll('li.merge-request .merge-request-title a').forEach(link => {
+        let splittedUrl = link.href.split('/-/merge_requests/');
+        let projectNamespace = splittedUrl[0].replace(baseUrl, '').trim();
+        let mergeRequestId = splittedUrl[1];
+        let projectPathUri = encodeURIComponent(projectNamespace);
+
+        console.log(`Updating merge request: [/api/v4/projects/${projectPathUri}/merge_requests/${mergeRequestID}/merge]`)
+
+        fetch(`/api/v4/projects/${projectPathUri}/merge_requests/${mergeRequestId}?description=${encodeURIComponent(description)}`, { method: 'PUT', headers: { 'X-CSRF-TOKEN': csrfToken } })
+            .then(res => res.json())
+            .then(mr => {
+                console.log(`New title for merge request: [/api/v4/projects/${projectPathUri}/merge_requests/${mergeRequestID}] is: [${mr.description}]`)
+                // console.log(mr)
+            })
+    })
 }
 
 (async () => {
