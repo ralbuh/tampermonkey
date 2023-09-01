@@ -9,7 +9,7 @@
 // @include      *gitlab*merge_requests*
 // ==/UserScript==
 
-function mergeAll() {
+function mergeAll(baseUrl, csrfToken) {
     if (!confirm("Are you sure you want to merge all listed merge requests?")) {
         return;
     }
@@ -35,7 +35,7 @@ function mergeAll() {
     )
 }
 
-function approveAll() {
+function approveAll(baseUrl, csrfToken) {
     if (!confirm("Are you sure you want to approve all listed merge requests?")) {
         return;
     }
@@ -80,6 +80,6 @@ function approveAll() {
 
     document.querySelector('.filter-dropdown-container').insertAdjacentHTML("afterend", mergeAllButton);
     document.querySelector('.filter-dropdown-container').insertAdjacentHTML("afterend", approveAllButton);
-    document.querySelector('.merge-all-btn').onclick = mergeAll;
-    document.querySelector('.approve-all-btn').onclick = approveAll;
+    document.querySelector('.merge-all-btn').onclick = mergeAll(baseUrl, csrfToken);
+    document.querySelector('.approve-all-btn').onclick = approveAll(baseUrl, csrfToken);
 })();
