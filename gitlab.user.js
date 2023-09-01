@@ -56,11 +56,11 @@ function approveAll() {
             .then(project => {
                 console.log(`Approve merge request: [/api/v4/projects/${project.id}/merge_requests/${mergeRequestID}/approve] for project: [${project.name_with_namespace}]`)
 
-                fetch(`/api/v4/projects/${project.id}/merge_requests/${mergeRequestID}/approve`, { method: 'PUT', headers: { 'X-CSRF-TOKEN': csrfToken } })
+                fetch(`/api/v4/projects/${project.id}/merge_requests/${mergeRequestID}/approve`, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrfToken } })
                     .then(res => res.json())
                     .then(mr => {
                         console.log(`Approved merge request: [/api/v4/projects/${project.id}/merge_requests/${mergeRequestID}/merge] with description: [${mr.description}]`)
-                        console.log(mr)
+                        // console.log(mr)
                     })
             })
     }
