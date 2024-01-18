@@ -118,8 +118,8 @@ function setMaxBid() {
 
     let injectedAutoBuyBox = document.createElement('div');
     injectedAutoBuyBox.id = "vv_note";
-    injectedAutoBuyBox.style.cssText = "font-size: 1.2em; color:white; background-color:rgb(0 103 145 / 80%); border-radius: 20px; padding: 10px 20px; position:fixed; bottom:50px; right:50px; z-index:1111;";
-    injectedAutoBuyBox.innerHTML = `<p><b>Max auto bid € <input style="font-size: 1em;font-weight: bold;background: transparent;color: white;border: none;" id="vv_maxBid" size=1 value="${maxBid}"/></b></p>`;
+    injectedAutoBuyBox.style.cssText = "font-size: 1.2em; color:white; background-color:rgba(255, 143, 0, 0.8); border-radius: 20px; padding: 10px 20px; position:fixed; bottom:50px; right:50px; z-index:1111;";
+    injectedAutoBuyBox.innerHTML = `<b>Max auto bid € <input style="font-size: 1em;font-weight: bold;background: transparent;color: white;border: none;" id="vv_maxBid" size=1 value="${maxBid}"/></b>`;
     document.body.appendChild(injectedAutoBuyBox);
 
     maxBid = await GM.getValue(maxBidKey, maxBid);
