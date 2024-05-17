@@ -1,9 +1,11 @@
 // ==UserScript==
 // @name         funda
 // @namespace    https://github.com/ralbuh/funda
-// @version      0.1
+// @version      0.2
 // @description  Funda download all pictures of a house
 // @author       Ralbuh
+// @downloadURL  https://github.com/ralbuh/tampermonkey/raw/master/funda.user.js
+// @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/funda.user.js
 // @match        https://www.funda.nl/*
 // @grant        GM_download
 // ==/UserScript==
