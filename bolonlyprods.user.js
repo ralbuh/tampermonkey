@@ -15,8 +15,6 @@ const SELLER_BOLCOM = "bol.com";
 const SELLER_BOLCOM_RETOURDEALS = "bol.com retourdeals";
 
 function removeNonBol() {
-    alert('hi');
-
     // Two options, old non flex with class names or flex with no identifiable class names
     //1
     [...document.querySelectorAll('li.product-item--row')].forEach(item => {
@@ -43,8 +41,10 @@ function isSoldByBol(sellerText) {
 
     let injectedRemoveButton = document.createElement('div');
     injectedRemoveButton.id = "remove_btn";
-    injectedRemoveButton.style.cssText = "font-size: 1.2em; color:white; background-color:rgba(255, 143, 0, 0.8); border-radius: 20px; padding: 10px 20px; position:fixed; bottom:50px; right:50px; z-index:1111;";
-    injectedRemoveButton.innerHTML = `<button>Only Bol own products</button>`;
+    //injectedRemoveButton.classList.add('c-btn-custom');
+    //injectedRemoveButton.style.cssText = "font-size: 1.2em; color:white; background-color:rgba(255, 143, 0, 0.8); border-radius: 20px; padding: 10px 20px; position:fixed; bottom:50px; right:50px; z-index:1111;";
+    injectedRemoveButton.style.cssText = "border-style: solid; border-color:var(--colors-blue200); border-radius: 10px; padding: 10px 20px; position:fixed; bottom:20px; right:20px; z-index:1111;";
+    injectedRemoveButton.innerHTML = `<a>Only Bol own products</a>`;
     injectedRemoveButton.addEventListener("click", removeNonBol);
     document.body.appendChild(injectedRemoveButton);
 
