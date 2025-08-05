@@ -5,7 +5,8 @@
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/bolonlyprods.user.js
 // @description  bol.com bol own products filter
 // @author       You
-// @include      *bol.com*
+// @include      *bol.com/nl/nl/s*
+// @include      *bol.com/nl/nl/l*
 // ==/UserScript==
 
 // Price overview name constants
