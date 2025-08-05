@@ -8,16 +8,44 @@
 // @include      *bol.com*
 // ==/UserScript==
 
-let maxBid = 0;
-let winners = ""
-let avgWinner, minWinner = null;
-let bidName, bidKey, winnersKey, maxBidKey, minWinnerKey, vv_maxBid, tid;
+// Price overview name constants
+const SELLER_BOL = "bol";
+const SELLER_BOL_RETOURDEALS = "retourdeals";
+const SELLER_BOLCOM = "bol.com";
+const SELLER_BOLCOM_RETOURDEALS = "bol.com retourdeals";
+
+function removeNonBol() {
+    alert('hi');
+
+    // Two options, old non flex with class names or flex with no identifiable class names
+    //1
+    [...document.querySelectorAll('li.product-item--row')].forEach(item => {
+        let seller = item.querySelector('div.product-seller').textContent.trim();
+    	if (!isSoldByBol(seller)) { item.remove() };
+    });
+
+    //2
+    [...document.querySelectorAll('[data-bltgi*="ProductList_Middle"]')].forEach(item => {
+        let seller = item.querySelector('.mt-4').textContent.trim();
+    	if (!isSoldByBol(seller)) { item.remove() };
+    });
+};
+
+function isSoldByBol(sellerText) {
+    return sellerText.endsWith(SELLER_BOLCOM)
+					|| sellerText.endsWith(SELLER_BOLCOM_RETOURDEALS)
+					|| sellerText.endsWith(SELLER_BOL)
+					|| (sellerText.includes(SELLER_BOL) && sellerText.includes(SELLER_BOL_RETOURDEALS));
+};
 
 (async () => {
     'use strict';
 
-    [...document.querySelectorAll('.product-item--row')].forEach(item => {
-    	let seller = item.querySelector("div.product-seller").innerText;
-    	if (seller != "Verkoop door bol.com") { item.remove() };
-    })
+    let injectedRemoveButton = document.createElement('div');
+    injectedRemoveButton.id = "remove_btn";
+    injectedRemoveButton.style.cssText = "font-size: 1.2em; color:white; background-color:rgba(255, 143, 0, 0.8); border-radius: 20px; padding: 10px 20px; position:fixed; bottom:50px; right:50px; z-index:1111;";
+    injectedRemoveButton.innerHTML = `<button>Only Bol own products</button>`;
+    injectedRemoveButton.addEventListener("click", removeNonBol);
+    document.body.appendChild(injectedRemoveButton);
+
 })();
