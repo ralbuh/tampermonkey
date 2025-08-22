@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         bol only products
 // @namespace    http://bol.com/
-// @version      0.9.0
+// @version      0.9.1
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/bolonlyprods.user.js
 // @description  bol.com bol own products filter
 // @author       You
@@ -19,14 +19,15 @@ function removeNonBol() {
     // Two options, old non flex with class names or flex with no identifiable class names
     //1
     [...document.querySelectorAll('li.product-item--row')].forEach(item => {
-        let seller = item.querySelector('div.product-seller').textContent.trim();
-    	if (!isSoldByBol(seller)) { item.remove() };
+        let seller = item.querySelector('div.product-seller');
+    	if (seller && !isSoldByBol(seller.textContent.trim())) { item.remove() };
     });
 
     //2
     [...document.querySelectorAll('[data-bltgi*="ProductList_Middle"]')].forEach(item => {
-        let seller = item.querySelector('.mt-4').textContent.trim();
-    	if (!isSoldByBol(seller)) { item.remove() };
+        console.log(item);
+        let seller = item.querySelector('.mt-4');
+    	if (seller && !isSoldByBol(seller.textContent.trim())) { item.remove() };
     });
 };
 
