@@ -25,7 +25,7 @@ function removeNonBol() {
 
     //2
     [...document.querySelectorAll('[data-bltgi*="ProductList_Middle"]')].forEach(item => {
-        console.log(item);
+        //console.log(item);
         let seller = item.querySelector('.mt-4');
     	if (seller && !isSoldByBol(seller.textContent.trim())) { item.remove() };
     });
