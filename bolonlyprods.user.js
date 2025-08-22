@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         bol only products
 // @namespace    http://bol.com/
-// @version      0.9.1
+// @version      0.9.2
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/bolonlyprods.user.js
 // @description  bol.com bol own products filter
 // @author       You
