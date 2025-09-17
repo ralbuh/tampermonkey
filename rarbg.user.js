@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name         Rarbg replace 22pixx links
-// @namespace    ttps://github.com/ralbuh/tampermonkey
-// @version      1.0
+// @namespace    https://github.com/ralbuh/tampermonkey
+// @version      1.0.1
+// @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/rarbg.user.js
 // @description  Bypass ad heavy in between pages
 // @author       Ralbuh
 // @match        http*://rarbg.to/*
