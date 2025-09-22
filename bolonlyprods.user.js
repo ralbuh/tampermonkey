@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         bol only products
 // @namespace    http://bol.com/
-// @version      0.9.2
+// @version      0.9.3
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/bolonlyprods.user.js
 // @description  bol.com bol own products filter
 // @author       You
 // @include      *bol.com/nl/nl/s*
 // @include      *bol.com/nl/nl/l*
+// @include      *bol.com/nl/nl/ra*
 // ==/UserScript==
 
 // Price overview name constants
@@ -24,7 +25,7 @@ function removeNonBol() {
     });
 
     //2
-    [...document.querySelectorAll('[data-bltgi*="ProductList_Middle"]')].forEach(item => {
+    [...document.querySelectorAll('[data-bltgi*="ProductList_Middle"]:not([data-bltgi*="banner"])')].forEach(item => {
         //console.log(item);
         let seller = item.querySelector('.mt-4');
     	if (seller && !isSoldByBol(seller.textContent.trim())) { item.remove() };
