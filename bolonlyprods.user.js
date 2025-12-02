@@ -1,13 +1,14 @@
 // ==UserScript==
 // @name         bol only products
 // @namespace    http://bol.com/
-// @version      0.9.3
+// @version      0.9.4
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/bolonlyprods.user.js
 // @description  bol.com bol own products filter
 // @author       You
 // @include      *bol.com/nl/nl/s*
 // @include      *bol.com/nl/nl/l*
 // @include      *bol.com/nl/nl/ra*
+// @include      *bol.com/nl/nl/b*
 // ==/UserScript==
 
 // Price overview name constants
