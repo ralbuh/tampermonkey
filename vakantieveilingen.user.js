@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         vakantieveilingen auto buy
 // @namespace    http://vakantieveilingen.nl/
-// @version      1.6.0
+// @version      1.6.1
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @downloadURL  https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @description  vakantieveilingen.nl auto bid
@@ -9,7 +9,6 @@
 // @include      *vakantieveilingen.nl*
 // @grant        GM.setValue
 // @grant        GM.getValue
-// @require      https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js
 // ==/UserScript==
 
 let maxBid = 0;
@@ -128,7 +127,7 @@ function setMaxBid() {
     minWinner = await GM.getValue(minWinnerKey, minWinner);
     if (minWinner) {
         let winnerArr = winners.split(", ");
-        //console.log(`winnerArr: ${winnerArr} fixed: ${average(winnerArr)} winners: ${winners}`);
+        console.log(`winnerArr: ${winnerArr} fixed: ${average(winnerArr)} winners: ${winners}`);
         avgWinner = average(winnerArr).toFixed();
         let statisticsObj = document.createElement("p");
         statisticsObj.style.cssText="max-width: 400px;";
