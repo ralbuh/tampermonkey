@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         vakantieveilingen auto buy
 // @namespace    http://vakantieveilingen.nl/ralbuh
-// @version      1.7.4
+// @version      1.7.5
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @downloadURL  https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @description  vakantieveilingen.nl auto bid
@@ -116,7 +116,7 @@ const updateNotificationVisibility = (isAuctionActive) => {
  */
 const parseBidAmount = (text) => {
     if (!text) return 0;
-    const cleaned = text.replace(/[^0-9]/g, '');
+    const cleaned = text.replace(/[^\d,]/g, '').split(',')[0]; // remove ",00" with split and all other chars except numbers
     return parseInt(cleaned, 10) || 0;
 };
 
