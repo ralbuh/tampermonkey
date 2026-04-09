@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         vakantieveilingen auto buy
 // @namespace    http://vakantieveilingen.nl/ralbuh
-// @version      1.7.3
+// @version      1.7.4
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @downloadURL  https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @description  vakantieveilingen.nl auto bid
@@ -149,7 +149,7 @@ const bidLogic = async () => {
 
         // Handle auction closed state
         if (refreshLinks) {
-            const highestBidElement = document.querySelector('span.bidblock-loss_price-won');
+            const highestBidElement = document.querySelector('span.bidblock-loss__price-won');
 
             if (highestBidElement) {
                 winners = await GM.getValue(winnersKey, winners);
