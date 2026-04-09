@@ -125,12 +125,12 @@ const parseBidAmount = (text) => {
  */
 const bidLogic = async () => {
     try {
-        const refreshLinks = document.querySelector('div.bidblock-loss__actions');
         const bid = document.querySelector("div.auction__bid-input input");
         const button = document.querySelector('div.auction__bid-input button.btn-n');
         const minBidButtons = document.querySelectorAll('div.auction__quick-bid button');
         const minBid = minBidButtons.length > 1 ? minBidButtons[1] : null;
         const timer = document.querySelector('div.timer-countdown-label');
+        const highestBidElement = document.querySelector('span.bidblock-loss__price-won');
 
         // Update notification visibility
         updateNotificationVisibility(!!button);
@@ -148,30 +148,26 @@ const bidLogic = async () => {
         }
 
         // Handle auction closed state
-        if (refreshLinks) {
-            const highestBidElement = document.querySelector('span.bidblock-loss__price-won');
+        if (highestBidElement) {
+            winners = await GM.getValue(winnersKey, winners);
+            const winnerArr = winners ? winners.split(", ").map(w => parseInt(w, 10)) : [];
 
-            if (highestBidElement) {
-                winners = await GM.getValue(winnersKey, winners);
-                const winnerArr = winners ? winners.split(", ").map(w => parseInt(w, 10)) : [];
+            const currentHighestBid = parseBidAmount(highestBidElement.textContent);
+            console.log(`Highest bid ${currentHighestBid}`);
 
-                const currentHighestBid = parseBidAmount(highestBidElement.textContent);
-                console.log(`Highest bid ${currentHighestBid}`);
+            if (currentHighestBid > 0) {
+                winnerArr.push(currentHighestBid);
+                winners = winnerArr.join(", ");
+                console.log(winners);
+                await GM.setValue(winnersKey, winners);
 
-                if (currentHighestBid > 0) {
-                    winnerArr.push(currentHighestBid);
-                    winners = winnerArr.join(", ");
-                    console.log(winners);
-                    await GM.setValue(winnersKey, winners);
-
-                    if (!minWinner || currentHighestBid < minWinner) {
-                        minWinner = currentHighestBid;
-                        await GM.setValue(minWinnerKey, minWinner);
-                    }
+                if (!minWinner || currentHighestBid < minWinner) {
+                    minWinner = currentHighestBid;
+                    await GM.setValue(minWinnerKey, minWinner);
                 }
-                
-                abortTimer();
             }
+            
+            abortTimer();
         }
     } catch (error) {
         console.error("Error in bidLogic:", error);
