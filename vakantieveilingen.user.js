@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         vakantieveilingen auto buy
 // @namespace    http://vakantieveilingen.nl/
-// @version      1.6.3
+// @version      1.6.4
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @downloadURL  https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @description  vakantieveilingen.nl auto bid
@@ -25,9 +25,9 @@ function bidLogic() {
     let timer = document.querySelector('div.timer-countdown-label'); // this one only appears during last minute (sub 60 seconds countdown)
 
     if (button){
-        document.querySelector('#vv_note').style.visibility = 'hidden';
+        document.querySelector('#vv_note').style.visibility = 'visible';
     } else {
-        document.querySelector('#vv_note').style.visitility = 'visible';
+        document.querySelector('#vv_note').style.visitility = 'hidden';
     }
 
     if (bid && timer){
