@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         vakantieveilingen auto buy
 // @namespace    http://vakantieveilingen.nl/ralbuh
-// @version      1.7.2
+// @version      1.7.3
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @downloadURL  https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @description  vakantieveilingen.nl auto bid
@@ -169,9 +169,9 @@ const bidLogic = async () => {
                         await GM.setValue(minWinnerKey, minWinner);
                     }
                 }
+                
+                abortTimer();
             }
-
-            abortTimer();
         }
     } catch (error) {
         console.error("Error in bidLogic:", error);
