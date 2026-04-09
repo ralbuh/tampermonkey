@@ -1,142 +1,296 @@
 // ==UserScript==
 // @name         vakantieveilingen auto buy
-// @namespace    http://vakantieveilingen.nl/
-// @version      1.6.4
+// @namespace    http://vakantieveilingen.nl/ralbuh
+// @version      1.7.0
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @downloadURL  https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @description  vakantieveilingen.nl auto bid
-// @author       You
+// @author       ralbuh
 // @include      *vakantieveilingen.nl*
 // @grant        GM.setValue
 // @grant        GM.getValue
 // ==/UserScript==
 
+// Constants
+const POLL_INTERVAL = 500; // ms
+const LAST_SECOND = "01";
+const NOTIFICATION_BOTTOM = "50px";
+const NOTIFICATION_RIGHT = "50px";
+const MAX_WAIT_ATTEMPTS = 50;
+const WAIT_ATTEMPT_DELAY = 100; // ms
+
+// Global state
 let maxBid = 0;
-let winners = ""
-let avgWinner, minWinner = null;
-let bidName, bidKey, winnersKey, maxBidKey, minWinnerKey, vv_maxBid, tid;
+let winners = "";
+let avgWinner = null;
+let minWinner = null;
+let bidName = null;
+let bidKey = null;
+let winnersKey = null;
+let maxBidKey = null;
+let minWinnerKey = null;
+let vv_maxBid = null;
+let tid = null;
 
-function bidLogic() {
-    //console.log("maxBidKey:"+maxBidKey+" jq disptime:"+$("#biddingBlock .display-time-value").textContent);
-    let refreshLinks = document.querySelector('div.bidblock-loss__actions'); // this one only appears after the auction has closed
-    let bid = document.querySelector("div.auction__bid-input input"); // input field for user bid
-    let button = document.querySelector('div.auction__bid-input button.btn-n'); // bid button for user bid
-    let minBid = document.querySelectorAll('div.auction__quick-bid button')[1]; // second fastbid button underneath the user bid input field
-    let timer = document.querySelector('div.timer-countdown-label'); // this one only appears during last minute (sub 60 seconds countdown)
-
-    if (button){
-        document.querySelector('#vv_note').style.visibility = 'visible';
-    } else {
-        document.querySelector('#vv_note').style.visitility = 'hidden';
-    }
-
-    if (bid && timer){
-        //console.log("maxBid:"+maxBid+" minBid:"+minBid.textContent+(minBid.textContent<=maxBid));
-        //setCookie(location, minBid, 1);
-
-        if(timer.textContent == "01" ){
-            let minBidInt = parseInt(minBid.textContent);
-            if(minBidInt<=maxBid){
-                bid.value = minBid.textContent;
-                button.click();
-                abortTimer();
+/**
+ * Wait for an element to appear in the DOM
+ * @param {string} selector - CSS selector to wait for
+ * @param {number} maxAttempts - Maximum attempts before timeout
+ * @returns {Promise<Element|null>} The element or null if not found
+ */
+async function waitForElement(selector, maxAttempts = MAX_WAIT_ATTEMPTS) {
+    return new Promise((resolve) => {
+        let attempts = 0;
+        const interval = setInterval(() => {
+            const el = document.querySelector(selector);
+            if (el || attempts++ >= maxAttempts) {
+                clearInterval(interval);
+                resolve(el);
             }
-        }
-    }
-
-    if (refreshLinks) {
-        (async () => {
-
-            winners = await GM.getValue(winnersKey, winners);
-            let winnerArr = [];
-            if(winners != "") winnerArr = winners.split(", ");
-            //if(winnerArr.length>15) winnerArr = winnerArr.slice(winnerArr.length-15, winnerArr.length);
-
-            let currentHighestBid = parseInt(document.querySelector('div[data-aq="highest-bid"] > h3').textContent.replace('€','').trim());
-            let currentWinner = document.querySelector('h2.MuiTypography-big-extra').textContent;
-            console.log(currentHighestBid);
-            winnerArr.push(currentHighestBid);
-            winners = winnerArr.join(", ");
-            GM.setValue(winnersKey, winners);
-
-            if(currentHighestBid>0 && (!minWinner || currentHighestBid<minWinner)){
-                minWinner = currentHighestBid;
-                GM.setValue(minWinnerKey, minWinner);
-            }
-        })();
-
-        //location.reload(); // not needed anymore since page automatically reloads
-        abortTimer();
-    }
+        }, WAIT_ATTEMPT_DELAY);
+    });
 }
 
-function hashCode(str) {
-    let hash = 0, i, chr;
+/**
+ * Generate a unique key from a string
+ * @param {string} str - String to hash
+ * @returns {number} Hash code
+ */
+const hashCode = (str) => {
+    let hash = 0;
     if (str.length === 0) return hash;
-    for (i = 0; i < str.length; i++) {
-        chr = str.charCodeAt(i);
+    for (let i = 0; i < str.length; i++) {
+        const chr = str.charCodeAt(i);
         hash = ((hash << 5) - hash) + chr;
-        //hash |= 0; // Convert to 32bit integer
     }
     return hash;
-}
+};
 
-function average(elmt){
-    let sum = 0;
-    for( let i = 0; i < elmt.length; i++ ){
-        sum += parseInt( elmt[i], 10 ); //don't forget to add the base
+/**
+ * Calculate the average of an array of numeric strings
+ * @param {string[]} elmt - Array of numeric strings
+ * @returns {number} Average value
+ */
+const average = (elmt) => {
+    if (!elmt || elmt.length === 0) return 0;
+    const sum = elmt.reduce((acc, val) => acc + parseInt(val, 10), 0);
+    return sum / elmt.length;
+};
+
+/**
+ * Stop the bid logic timer
+ */
+const abortTimer = () => {
+    if (tid) {
+        clearInterval(tid);
+        tid = null;
     }
+};
 
-    var avg = sum/elmt.length;
-    return avg;
-}
-
-function abortTimer() {
-    clearInterval(tid);
-}
-
-function setMaxBid() {
-    let newMax = parseInt(vv_maxBid.value);
-    if(!isNaN(newMax)){
+/**
+ * Update the maximum bid value
+ */
+const setMaxBid = async () => {
+    const newMax = parseInt(vv_maxBid.value, 10);
+    if (!isNaN(newMax)) {
         maxBid = newMax;
-        GM.setValue(maxBidKey, maxBid).then();
+        await GM.setValue(maxBidKey, maxBid);
     }
-}
+};
 
+/**
+ * Update notification visibility based on auction state
+ * @param {boolean} isAuctionActive - Whether the auction is still active
+ */
+const updateNotificationVisibility = (isAuctionActive) => {
+    const notification = document.querySelector('#vv_note');
+    if (notification) {
+        notification.style.visibility = isAuctionActive ? 'visible' : 'hidden';
+    }
+};
+
+/**
+ * Parse bid amount from text
+ * @param {string} text - Text containing bid amount
+ * @returns {number} Parsed bid amount
+ */
+const parseBidAmount = (text) => {
+    if (!text) return 0;
+    const cleaned = text.replace(/[^0-9]/g, '');
+    return parseInt(cleaned, 10) || 0;
+};
+
+/**
+ * Main bidding logic executed on interval
+ */
+const bidLogic = async () => {
+    try {
+        const refreshLinks = document.querySelector('div.bidblock-loss__actions');
+        const bid = document.querySelector("div.auction__bid-input input");
+        const button = document.querySelector('div.auction__bid-input button.btn-n');
+        const minBidButtons = document.querySelectorAll('div.auction__quick-bid button');
+        const minBid = minBidButtons.length > 1 ? minBidButtons[1] : null;
+        const timer = document.querySelector('div.timer-countdown-label');
+
+        // Update notification visibility
+        updateNotificationVisibility(!!button);
+
+        // Auto bid logic when in last second
+        if (bid && timer && minBid) {
+            if (timer.textContent === LAST_SECOND) {
+                const minBidInt = parseBidAmount(minBid.textContent);
+                if (minBidInt > 0 && minBidInt <= maxBid) {
+                    bid.value = minBid.textContent;
+                    button.click();
+                    abortTimer();
+                }
+            }
+        }
+
+        // Handle auction closed state
+        if (refreshLinks) {
+            const highestBidElement = document.querySelector('div[data-aq="highest-bid"] > h3');
+            const winnerElement = document.querySelector('h2.MuiTypography-big-extra');
+
+            if (highestBidElement && winnerElement) {
+                winners = await GM.getValue(winnersKey, winners);
+                const winnerArr = winners ? winners.split(", ").map(w => parseInt(w, 10)) : [];
+
+                const currentHighestBid = parseBidAmount(highestBidElement.textContent);
+
+                if (currentHighestBid > 0) {
+                    winnerArr.push(currentHighestBid);
+                    winners = winnerArr.join(", ");
+                    await GM.setValue(winnersKey, winners);
+
+                    if (!minWinner || currentHighestBid < minWinner) {
+                        minWinner = currentHighestBid;
+                        await GM.setValue(minWinnerKey, minWinner);
+                    }
+                }
+            }
+
+            abortTimer();
+        }
+    } catch (error) {
+        console.error("Error in bidLogic:", error);
+    }
+};
+
+/**
+ * Initialize the auction title and storage keys
+ */
+const initializeAuction = async () => {
+    const titleElement = await waitForElement('h1.auction__title');
+
+    if (!titleElement || !titleElement.textContent) {
+        console.warn("Could not find auction title");
+        return false;
+    }
+
+    bidName = titleElement.textContent.trim();
+    bidKey = hashCode(bidName);
+    winnersKey = `${bidKey}_winners`;
+    maxBidKey = `${bidKey}_maxBid`;
+    minWinnerKey = `${bidKey}_minWinner`;
+
+    return true;
+};
+
+/**
+ * Create and inject the auto-buy notification box
+ */
+const createNotificationBox = () => {
+    const injectedAutoBuyBox = document.createElement('div');
+    injectedAutoBuyBox.id = "vv_note";
+    injectedAutoBuyBox.style.cssText = `
+        font-size: 1.2em;
+        color: white;
+        background-color: rgba(255, 143, 0, 0.8);
+        border-radius: 20px;
+        padding: 10px 20px;
+        position: fixed;
+        bottom: ${NOTIFICATION_BOTTOM};
+        right: ${NOTIFICATION_RIGHT};
+        z-index: 10000;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    `;
+    injectedAutoBuyBox.innerHTML = `
+        <b>Max auto bid € <input 
+            style="font-size: 1em; font-weight: bold; background: transparent; color: white; border: none; border-bottom: 1px solid white;" 
+            id="vv_maxBid" 
+            type="number"
+            size="1" 
+            value="${maxBid}"/></b>
+    `;
+
+    return injectedAutoBuyBox;
+};
+
+/**
+ * Update statistics display
+ */
+const updateStatistics = (injectedAutoBuyBox) => {
+    if (minWinner) {
+        const winnerArr = winners ? winners.split(", ") : [];
+        const calculatedAvg = average(winnerArr).toFixed(2);
+
+        // Remove existing statistics if present
+        const existingStats = injectedAutoBuyBox.querySelector("p");
+        if (existingStats) {
+            existingStats.remove();
+        }
+
+        const statisticsObj = document.createElement("p");
+        statisticsObj.style.cssText = "max-width: 400px; margin: 10px 0 0 0; font-size: 0.9em;";
+        statisticsObj.innerHTML = `
+            <small>
+                Min won price: €${minWinner}<br>
+                Avg won price: €${calculatedAvg}<br>
+                Latest won prices: ${winners}
+            </small>
+        `;
+        injectedAutoBuyBox.append(statisticsObj);
+    }
+};
+
+/**
+ * Main initialization
+ */
 (async () => {
     'use strict';
 
-    while(!bidName){
-        bidName = document.querySelector('h1.auction__title').textContent;  // title of the auction
-        //console.log("bidName:" + bidName);
+    try {
+        // Wait for auction title to load
+        const titleLoaded = await initializeAuction();
+        if (!titleLoaded) {
+            console.error("Failed to initialize auction");
+            return;
+        }
+
+        // Create and inject notification box
+        const injectedAutoBuyBox = createNotificationBox();
+        document.body.appendChild(injectedAutoBuyBox);
+
+        // Load stored values
+        maxBid = await GM.getValue(maxBidKey, 0);
+        winners = await GM.getValue(winnersKey, "");
+        minWinner = await GM.getValue(minWinnerKey, null);
+
+        // Update statistics display
+        updateStatistics(injectedAutoBuyBox);
+
+        // Setup input handler
+        vv_maxBid = document.getElementById('vv_maxBid');
+        if (vv_maxBid) {
+            vv_maxBid.addEventListener("input", setMaxBid, false);
+        }
+
+        // Start bid logic timer
+        tid = setInterval(bidLogic, POLL_INTERVAL);
+
+        console.log("Vakantieveilingen auto bid script initialized");
+    } catch (error) {
+        console.error("Error initializing script:", error);
     }
-
-    bidKey = hashCode(bidName);
-    winnersKey = bidKey+"_winners";
-    maxBidKey = bidKey+"_maxBid";
-    minWinnerKey = bidKey+"_minWinner";
-
-    let injectedAutoBuyBox = document.createElement('div');
-    injectedAutoBuyBox.id = "vv_note";
-    injectedAutoBuyBox.style.cssText = "font-size: 1.2em; color:white; background-color:rgba(255, 143, 0, 0.8); border-radius: 20px; padding: 10px 20px; position:fixed; bottom:50px; right:50px; z-index:1111;";
-    injectedAutoBuyBox.innerHTML = `<b>Max auto bid € <input style="font-size: 1em;font-weight: bold;background: transparent;color: white;border: none;" id="vv_maxBid" size=1 value="${maxBid}"/></b>`;
-    document.body.appendChild(injectedAutoBuyBox);
-
-    maxBid = await GM.getValue(maxBidKey, maxBid);
-    winners = await GM.getValue(winnersKey, winners);
-    minWinner = await GM.getValue(minWinnerKey, minWinner);
-    if (minWinner) {
-        let winnerArr = winners.split(", ");
-        console.log(`winnerArr: ${winnerArr} fixed: ${average(winnerArr)} winners: ${winners}`);
-        avgWinner = average(winnerArr).toFixed();
-        let statisticsObj = document.createElement("p");
-        statisticsObj.style.cssText="max-width: 400px;";
-        statisticsObj.innerHTML = `<small>Min won price: ${minWinner} Avg won price: ${avgWinner}</br>latest won prices: ${winners}</small>`;
-        injectedAutoBuyBox.append(statisticsObj);
-    }
-
-    vv_maxBid = document.getElementById('vv_maxBid');
-    vv_maxBid.addEventListener ("input", setMaxBid , false);
-
-    tid = setInterval(bidLogic, 500);
 })();
