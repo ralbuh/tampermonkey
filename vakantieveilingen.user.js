@@ -1,8 +1,9 @@
 // ==UserScript==
 // @name         vakantieveilingen auto buy
 // @namespace    http://vakantieveilingen.nl/
-// @version      1.5.1
+// @version      1.6.0
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
+// @downloadURL  https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @description  vakantieveilingen.nl auto bid
 // @author       You
 // @include      *vakantieveilingen.nl*
@@ -19,15 +20,15 @@ let bidName, bidKey, winnersKey, maxBidKey, minWinnerKey, vv_maxBid, tid;
 function bidLogic() {
     //console.log("maxBidKey:"+maxBidKey+" jq disptime:"+$("#biddingBlock .display-time-value").textContent);
     let refreshLinks = document.querySelector('a[data-aq="reopen-auction"]'); // this one only appears after the auction has closed
-    let bid = document.querySelector("input#bid"); // input field for user bid
-    let button = document.querySelector('button[data-aq="place-bid"]'); // bid button for user bid
-    let minBid = document.querySelectorAll('button[data-aq="fastbid-button"]')[1]; // second fastbid button underneath the user bid input field
+    let bid = document.querySelector("div.auction__bid-input input"); // input field for user bid
+    let button = document.querySelector('div.auction__bid-input button.btn-n'); // bid button for user bid
+    let minBid = document.querySelectorAll('div.auction__quick-bid button')[1]; // second fastbid button underneath the user bid input field
     let timer = document.querySelector('div.timer-countdown-label'); // this one only appears during last minute (sub 60 seconds countdown)
 
     if (button){
-        $("#vv_note").show();
+        document.querySelector('#vv_note').show();
     } else {
-        $("#vv_note").hide();
+        document.querySelector('#vv_note').hide();
     }
 
     if (bid && timer){
@@ -107,7 +108,7 @@ function setMaxBid() {
     'use strict';
 
     while(!bidName){
-        bidName = document.querySelector('h1.MuiTypography-big-extra').textContent;
+        bidName = document.querySelector('h1.auction__title').textContent;  // title of the auction
         //console.log("bidName:" + bidName);
     }
 
