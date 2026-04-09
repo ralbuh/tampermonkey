@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         vakantieveilingen auto buy
 // @namespace    http://vakantieveilingen.nl/
-// @version      1.6.1
+// @version      1.6.2
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @downloadURL  https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @description  vakantieveilingen.nl auto bid
@@ -18,7 +18,7 @@ let bidName, bidKey, winnersKey, maxBidKey, minWinnerKey, vv_maxBid, tid;
 
 function bidLogic() {
     //console.log("maxBidKey:"+maxBidKey+" jq disptime:"+$("#biddingBlock .display-time-value").textContent);
-    let refreshLinks = document.querySelector('a[data-aq="reopen-auction"]'); // this one only appears after the auction has closed
+    let refreshLinks = document.querySelector('div.bidblock-loss__actions'); // this one only appears after the auction has closed
     let bid = document.querySelector("div.auction__bid-input input"); // input field for user bid
     let button = document.querySelector('div.auction__bid-input button.btn-n'); // bid button for user bid
     let minBid = document.querySelectorAll('div.auction__quick-bid button')[1]; // second fastbid button underneath the user bid input field
