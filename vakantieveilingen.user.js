@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         vakantieveilingen auto buy
 // @namespace    http://vakantieveilingen.nl/ralbuh
-// @version      1.7.1
+// @version      1.7.2
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @downloadURL  https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @description  vakantieveilingen.nl auto bid
@@ -156,10 +156,12 @@ const bidLogic = async () => {
                 const winnerArr = winners ? winners.split(", ").map(w => parseInt(w, 10)) : [];
 
                 const currentHighestBid = parseBidAmount(highestBidElement.textContent);
+                console.log(`Highest bid ${currentHighestBid}`);
 
                 if (currentHighestBid > 0) {
                     winnerArr.push(currentHighestBid);
                     winners = winnerArr.join(", ");
+                    console.log(winners);
                     await GM.setValue(winnersKey, winners);
 
                     if (!minWinner || currentHighestBid < minWinner) {
