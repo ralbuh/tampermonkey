@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         vakantieveilingen auto buy
 // @namespace    http://vakantieveilingen.nl/ralbuh
-// @version      2.0.3
+// @version      2.0.4
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @downloadURL  https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @description  vakantieveilingen.nl auto bid
@@ -230,7 +230,7 @@ const createNotificationBox = () => {
 const updateStatistics = (injectedAutoBuyBox) => {
     if (minWinner) {
         const winnerArr = winners ? winners.split(", ") : [];
-        const calculatedAvg = average(winnerArr).toFixed(2);
+        const calculatedAvg = average(winnerArr).toFixed();
 
         // Remove existing statistics if present
         const existingStats = injectedAutoBuyBox.querySelector("p");
