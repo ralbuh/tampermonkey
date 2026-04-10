@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         vakantieveilingen auto buy
 // @namespace    http://vakantieveilingen.nl/ralbuh
-// @version      2.0.2
+// @version      2.0.3
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @downloadURL  https://github.com/ralbuh/tampermonkey/raw/master/vakantieveilingen.user.js
 // @description  vakantieveilingen.nl auto bid
@@ -215,9 +215,7 @@ const createNotificationBox = () => {
     injectedAutoBuyBox.innerHTML = `
         <b>Max auto bid € <input 
             style="font-size: 1em; font-weight: bold; background: transparent; color: white; border: 2px dotted rgb(255, 143, 0); border-radius: 10px;" 
-            type="text"
-            inputmode="numeric"
-            pattern="\d*"
+            type="number"
             id="vv_maxBid" 
             size="1" 
             value="${maxBid}"/></b>
