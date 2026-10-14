@@ -15,15 +15,18 @@ function mergeAll() {
 
     processing();
 
+    // Extract project path per-link: document.body.dataset.projectId is absent on group-level MR pages
+    // and wrong for mixed-project lists. The link href always contains the correct project path.
     let allFetches = [...document.querySelectorAll('li.merge-request a.issue-title-text')].map(link => {
-        let mergeRequestId = link.href.split('/-/merge_requests/')[1];
+        const [projectPath, mergeRequestId] = link.href.split('/-/merge_requests/');
+        const encodedProject = encodeURIComponent(new URL(projectPath).pathname.slice(1));
 
-        console.log(`Merging merge request: [/api/v4/projects/${document.body.dataset.projectId}/merge_requests/${mergeRequestId}/merge]`)
+        console.log(`Merging merge request: [/api/v4/projects/${encodedProject}/merge_requests/${mergeRequestId}/merge]`)
 
-        return fetch(`/api/v4/projects/${document.body.dataset.projectId}/merge_requests/${mergeRequestId}/merge`, {method: 'PUT', headers: {'X-CSRF-TOKEN': csrfToken}})
+        return fetch(`/api/v4/projects/${encodedProject}/merge_requests/${mergeRequestId}/merge`, {method: 'PUT', headers: {'X-CSRF-TOKEN': csrfToken}})
             .then(res => res.json())
             .then(mr => {
-                console.log(`Merged merge request: [/api/v4/projects/${document.body.dataset.projectId}/merge_requests/${mergeRequestId}/merge] with description: [${mr.description}]`)
+                console.log(`Merged merge request: [/api/v4/projects/${encodedProject}/merge_requests/${mergeRequestId}/merge] with description: [${mr.description}]`)
                 // console.log(mr)
             })
     })
@@ -39,15 +42,17 @@ function approveAll() {
 
     processing();
     
+    // See mergeAll: extract project path per-link, not from document.body.dataset.projectId
     let allFetches = [...document.querySelectorAll('li.merge-request a.issue-title-text')].map(link => {
-        let mergeRequestId = link.href.split('/-/merge_requests/')[1];
+        const [projectPath, mergeRequestId] = link.href.split('/-/merge_requests/');
+        const encodedProject = encodeURIComponent(new URL(projectPath).pathname.slice(1));
 
-        console.log(`Approve merge request: [/api/v4/projects/${document.body.dataset.projectId}/merge_requests/${mergeRequestId}/approve]`)
+        console.log(`Approve merge request: [/api/v4/projects/${encodedProject}/merge_requests/${mergeRequestId}/approve]`)
 
-        return fetch(`/api/v4/projects/${document.body.dataset.projectId}/merge_requests/${mergeRequestId}/approve`, {method: 'POST', headers: {'X-CSRF-TOKEN': csrfToken}})
+        return fetch(`/api/v4/projects/${encodedProject}/merge_requests/${mergeRequestId}/approve`, {method: 'POST', headers: {'X-CSRF-TOKEN': csrfToken}})
             .then(res => res.json())
             .then(mr => {
-                console.log(`Approved merge request: [/api/v4/projects/${document.body.dataset.projectId}/merge_requests/${mergeRequestId}/merge] with description: [${mr.description}]`)
+                console.log(`Approved merge request: [/api/v4/projects/${encodedProject}/merge_requests/${mergeRequestId}/merge] with description: [${mr.description}]`)
                 // console.log(mr)
             })
     })
@@ -64,15 +69,17 @@ function updateDescription() {
 
     processing();
 
+    // See mergeAll: extract project path per-link, not from document.body.dataset.projectId
     let allFetches = [...document.querySelectorAll('li.merge-request a.issue-title-text')].map(link => {
-        let mergeRequestId = link.href.split('/-/merge_requests/')[1];
+        const [projectPath, mergeRequestId] = link.href.split('/-/merge_requests/');
+        const encodedProject = encodeURIComponent(new URL(projectPath).pathname.slice(1));
 
-        console.log(`Updating merge request: [/api/v4/projects/${document.body.dataset.projectId}/merge_requests/${mergeRequestId}/merge]`)
+        console.log(`Updating merge request: [/api/v4/projects/${encodedProject}/merge_requests/${mergeRequestId}]`)
 
-        return fetch(`/api/v4/projects/${document.body.dataset.projectId}/merge_requests/${mergeRequestId}?description=${encodeURIComponent(description)}`, {method: 'PUT', headers: {'X-CSRF-TOKEN': csrfToken}})
+        return fetch(`/api/v4/projects/${encodedProject}/merge_requests/${mergeRequestId}?description=${encodeURIComponent(description)}`, {method: 'PUT', headers: {'X-CSRF-TOKEN': csrfToken}})
             .then(res => res.json())
             .then(mr => {
-                console.log(`New title for merge request: [/api/v4/projects/${document.body.dataset.projectId}/merge_requests/${mergeRequestId}] is: [${mr.description}]`)
+                console.log(`New title for merge request: [/api/v4/projects/${encodedProject}/merge_requests/${mergeRequestId}] is: [${mr.description}]`)
                 // console.log(mr)
             })
     })
