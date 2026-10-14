@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         gitlab utilities
 // @namespace    https://gitlab.bol.io/-/snippets/450
-// @version      1.5.0
+// @version      1.6.0
 // @downloadURL  https://gitlab.bol.io/-/snippets/450/raw/main/gitlab.user.js
 // @updateURL    https://gitlab.bol.io/-/snippets/450/raw/main/gitlab.user.js
-// @description  Add merge all and approve all button for merge request page, will merge/approve everything with gitlab api v4 using csrf-token
+// @description  Add merge/approve/change description for all merge requests and delete all stale branches older then a year options/buttons
 // @author       Ralph Boijmans
 // @include      *gitlab*merge_requests*
 // @include      *gitlab*/-/branches/stale*
