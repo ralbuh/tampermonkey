@@ -2,10 +2,10 @@
 // @name         gitlab utilities
 // @namespace    https://gitlab.bol.io/-/snippets/450
 // @version      1.6.0
-// @downloadURL  https://gitlab.bol.io/-/snippets/450/raw/main/gitlab.user.js
-// @updateURL    https://gitlab.bol.io/-/snippets/450/raw/main/gitlab.user.js
+// @downloadURL  https://github.com/ralbuh/tampermonkey/raw/refs/heads/master/gitlab.user.js
+// @updateURL    https://github.com/ralbuh/tampermonkey/raw/refs/heads/master/gitlab.user.js
 // @description  Add merge/approve/change description for all merge requests and delete all stale branches older then a year options/buttons
-// @author       Ralph Boijmans
+// @author       Ralbuh
 // @include      *gitlab*merge_requests*
 // @include      *gitlab*/-/branches/stale*
 // ==/UserScript==
