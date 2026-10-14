@@ -63,51 +63,55 @@ async function deleteStaleBranches() {
 
     processing();
 
-    let shownBranches = [...document.querySelectorAll('ul.all-branches li.branch-item a.ref-name')].map(link => {
-        return link.text.trim()
-    });
-    console.log('shown branches: ' + shownBranches);
+    try {
+        // let shownBranches = [...document.querySelectorAll('ul.all-branches li.branch-item a.ref-name')].map(link => {
+        //     return link.text.trim()
+        // });
+        // console.log('shown branches: ' + shownBranches);
 
-    let branches = []
-    branches = await fetch(`${projectApi}/repository/branches?state=stale&per_page=100&page=1`).then(r => r.json());
-    const staleBranches = branches.filter(b => !b.default && !b.protected && new Date(b.commit.committed_date) < oneYearAgo);
-    console.log('stale branches: ' + staleBranches.map(sb => sb.name));
+        const branches = await fetch(`${projectApi}/repository/branches?state=stale&per_page=100&page=1`).then(r => r.json());
+        const staleBranches = branches.filter(b => !b.default && !b.protected && new Date(b.commit.committed_date) < oneYearAgo);
+        console.log('stale branches: ' + staleBranches.map(sb => sb.name));
 
-    const checks = await Promise.all(staleBranches.map(async b => {
-        const encoded = encodeURIComponent(b.name);
-        const [merged, closed] = await Promise.all([
-            fetch(`${projectApi}/merge_requests?source_branch=${encoded}&state=merged`).then(r => r.json()),
-            fetch(`${projectApi}/merge_requests?source_branch=${encoded}&state=closed`).then(r => r.json()),
-        ]);
-        return { branch: b, hasClosedMR: merged.length > 0 || closed.length > 0 };
-    }));
+        const checks = await Promise.all(staleBranches.map(async b => {
+            const encoded = encodeURIComponent(b.name);
+            const [merged, closed] = await Promise.all([
+                fetch(`${projectApi}/merge_requests?source_branch=${encoded}&state=merged`).then(r => r.json()),
+                fetch(`${projectApi}/merge_requests?source_branch=${encoded}&state=closed`).then(r => r.json()),
+            ]);
+            return { branch: b, hasClosedMR: merged.length > 0 || closed.length > 0 };
+        }));
 
-    const toDelete = checks.filter(c => c.hasClosedMR).map(c => c.branch);
-    console.log('to delete branches: ' + shownBranches);
+        const toDelete = checks.filter(c => c.hasClosedMR).map(c => c.branch);
+        console.log('to delete branches: ' + toDelete.map(b => b.name));
 
-    document.body.style.removeProperty("opacity");
-    document.body.style.removeProperty("cursor");
+        document.body.style.removeProperty("opacity");
+        document.body.style.removeProperty("cursor");
 
-    if (!toDelete.length) {
-        alert("No stale branches with merged/closed MRs found.");
-        return;
+        if (!toDelete.length) {
+            alert("No stale branches with merged/closed MRs found.");
+            return;
+        }
+
+        const branchList = toDelete.map(b => `- ${b.name} (${b.commit.committed_date.slice(0, 10)})`).join('\n');
+
+        if (!confirm(`Delete ${toDelete.length} stale branches?\n\n${branchList}`)) return;
+        processing();
+
+        await Promise.all(toDelete.map(b => {
+            console.log(`Deleting branch: ${b.name}`);
+            return fetch(`${projectApi}/repository/branches/${encodeURIComponent(b.name)}`, {
+                method: 'DELETE',
+                headers: { 'X-CSRF-TOKEN': csrfToken }
+            });
+        }));
+
+        alert(`Deleted ${toDelete.length} stale branches.`);
+        location.reload();
+    } catch (e) {
+        done();
+        alert(`Error: ${e.message}`);
     }
-
-    const branchList = toDelete.map(b => `- ${b.name} (${b.commit.committed_date.slice(0, 10)})`).join('\n');
-
-    if (!confirm(`Delete ${toDelete.length} stale branches?\n\n${branchList}`)) return;
-    processing();
-
-    await Promise.all(toDelete.map(b => {
-        console.log(`Deleting branch: ${b.name}`);
-        return fetch(`${projectApi}/repository/branches/${encodeURIComponent(b.name)}`, {
-            method: 'DELETE',
-            headers: { 'X-CSRF-TOKEN': csrfToken }
-        });
-    }));
-
-    alert(`Deleted ${toDelete.length} stale branches.`);
-    location.reload();
 }
 
 function processing() { 
@@ -115,7 +119,7 @@ function processing() {
     document.body.style.cursor = 'progress';
 }
 
-function done() { document.body.style.removeProperty("opacity") }
+// function done() { document.body.style.removeProperty("opacity") }
 
 const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
