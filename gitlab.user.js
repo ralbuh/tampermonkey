@@ -70,7 +70,7 @@ async function deleteStaleBranches() {
         // console.log('shown branches: ' + shownBranches);
 
         const branches = await fetch(`${projectApi}/repository/branches?state=stale&per_page=100&page=1`).then(r => r.json());
-        const staleBranches = branches.filter(b => !b.default && !b.protected && new Date(b.commit.committed_date) < oneYearAgo);
+        const staleBranches = branches.filter(b => !b.default && !b.protected && b.commit && new Date(b.commit.committed_date) < oneYearAgo);
         console.log('stale branches: ' + staleBranches.map(sb => sb.name));
 
         const checks = await Promise.all(staleBranches.map(async b => {
