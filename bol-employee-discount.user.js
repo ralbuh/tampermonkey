@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         Bol Employee Discount
-// @namespace    https://gitlab.bol.io/martijnsteenbergen/bol-extensions/
+// @namespace    https://github.com/ralbuh/tampermonkey
 // @version      1.0.0
 // @description  Shows estimated employee discount price on bol.com product and list pages
 // @author       ralbuh
+// @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/bol-employee-discount.user.js
 // @match        *://www.bol.com/*
 // @grant        unsafeWindow
 // ==/UserScript==
