@@ -3,12 +3,8 @@
 // @namespace    https://gitlab.bol.io/martijnsteenbergen/bol-extensions/
 // @version      1.0.0
 // @description  Shows estimated employee discount price on bol.com product and list pages
-// @author       Based on Better Bol by Martijn Steenbergen, Martin Luhrman, Robin Trietsch, Ivan Plantevin, Ralf Floris
+// @author       ralbuh
 // @match        *://www.bol.com/*
-// @match        *://acc2.bol.com/*
-// @match        *://test2.bol.com/*
-// @match        *://ra-*.pro.bol.io/*
-// @match        *://ra-*.stg.bol.io/*
 // @grant        unsafeWindow
 // ==/UserScript==
 
