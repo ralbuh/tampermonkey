@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         Bol Employee Discount
 // @namespace    https://github.com/ralbuh/tampermonkey
-// @version      1.0.0
-// @description  Shows estimated employee discount price on bol.com product and list pages
+// @version      1.1.0
+// @description  Shows estimated employee discount price and adds bol-only products filter on bol.com
 // @author       ralbuh
-// @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/bol-employee-discount.user.js
+// @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/bol-only-discount.user.js
 // @match        *://www.bol.com/*
 // @grant        unsafeWindow
 // ==/UserScript==
@@ -77,6 +77,10 @@ function isProductPage() {
     return matchesUrl(/\/(?:p|l|s)\//g);
 }
 
+function isListPage() {
+    return matchesUrl(/\/(?:s|l|ra|b)\//g) || matchesUrl(/bol\.com\/\w{2}\/\w{2}\/(?:s|l|ra|b)/g);
+}
+
 // ---------------------------------------------------------------------------
 // Discount calculation
 // Source: packages/application/src/packages/employee-discount/employee-discount.ts
@@ -117,9 +121,7 @@ function computeDiscountPrice(discountSet, offerPrice, retailerId) {
 
 // ---------------------------------------------------------------------------
 // Page data extraction from React Router internal state
-// Source: packages/application/src/packages/employee-discount/employee-discount.ts
 // ---------------------------------------------------------------------------
-
 function hasSelectMembership(loaderData) {
     try {
         return Boolean(loaderData.root?.customer?.select);
@@ -198,6 +200,82 @@ function computeAllDiscounts() {
 }
 
 // ---------------------------------------------------------------------------
+// Bol-only products filter
+// Source: bolonlyprods.user.js
+// ---------------------------------------------------------------------------
+
+const FILTER_BTN_ID = 'bol-only-filter-btn';
+const SELLER_BOL = 'bol';
+const SELLER_BOL_RETOURDEALS = 'retourdeals';
+const SELLER_BOLCOM = 'bol.com';
+const SELLER_BOLCOM_RETOURDEALS = 'bol.com retourdeals';
+
+function isSoldByBol(sellerText) {
+    return sellerText.endsWith(SELLER_BOLCOM)
+        || sellerText.endsWith(SELLER_BOLCOM_RETOURDEALS)
+        || sellerText.endsWith(SELLER_BOL)
+        || (sellerText.includes(SELLER_BOL) && sellerText.includes(SELLER_BOL_RETOURDEALS));
+}
+
+function removeNonBol() {
+    // 1. Classic product rows
+    document.querySelectorAll('li.product-item--row').forEach(item => {
+        const seller = item.querySelector('div.product-seller');
+        if (seller && !isSoldByBol(seller.textContent.trim())) item.remove();
+    });
+
+    // 2. Polaris/flex product cards
+    document.querySelectorAll('[data-bltgi*="ProductList_Middle"]:not([data-bltgi*="banner"])').forEach(item => {
+        const seller = item.querySelector('.mt-4');
+        if (seller && !isSoldByBol(seller.textContent.trim())) item.remove();
+    });
+
+    const btn = document.getElementById(FILTER_BTN_ID);
+    if (btn) {
+        btn.textContent = 'Non-Bol filtered';
+        btn.style.opacity = '0.6';
+        btn.style.pointerEvents = 'none';
+    }
+}
+
+function injectFilterButton() {
+    if (!isListPage() || document.getElementById(FILTER_BTN_ID)) return;
+
+    const btn = document.createElement('div');
+    btn.id = FILTER_BTN_ID;
+    btn.textContent = 'Only Bol own products';
+    Object.assign(btn.style, {
+        position: 'fixed',
+        bottom: '20px',
+        right: '20px',
+        border: '2px solid #0000a4',
+        borderRadius: '10px',
+        padding: '10px 18px',
+        background: '#ffffff',
+        color: '#0000a4',
+        fontFamily: 'sans-serif',
+        fontSize: '13px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        zIndex: '999998',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+        transition: 'all 0.15s ease',
+    });
+
+    btn.addEventListener('mouseenter', () => {
+        btn.style.background = '#0000a4';
+        btn.style.color = '#ffffff';
+    });
+    btn.addEventListener('mouseleave', () => {
+        btn.style.background = '#ffffff';
+        btn.style.color = '#0000a4';
+    });
+    btn.addEventListener('click', removeNonBol);
+
+    document.body.appendChild(btn);
+}
+
+// ---------------------------------------------------------------------------
 // UI — simple floating badge, no external dependencies
 // ---------------------------------------------------------------------------
 
@@ -226,9 +304,14 @@ function showBadge(items) {
     const badge = document.createElement('div');
     badge.id = BADGE_ID;
     badge.innerHTML = buildBadgeHtml(items);
+
+    // Position above the filter button if present
+    const hasFilterBtn = Boolean(document.getElementById(FILTER_BTN_ID));
+    const bottomOffset = hasFilterBtn ? '70px' : '20px';
+
     Object.assign(badge.style, {
         position: 'fixed',
-        bottom: '20px',
+        bottom: bottomOffset,
         right: '20px',
         maxWidth: '260px',
         background: '#0066cc',
@@ -252,6 +335,8 @@ function showBadge(items) {
 // ---------------------------------------------------------------------------
 
 function run() {
+    injectFilterButton();
+
     if (!isProductPage()) return;
 
     const items = computeAllDiscounts();
@@ -274,5 +359,6 @@ const poll = setInterval(() => {
 window.addEventListener('popstate', () => {
     pollAttempts = 0;
     document.getElementById(BADGE_ID)?.remove();
+    document.getElementById(FILTER_BTN_ID)?.remove();
     setTimeout(run, 500);
 });
