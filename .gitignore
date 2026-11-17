@@ -1,0 +1,12 @@
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### VS Code ###
+.vscode/
+
+# Local Claude Code settings (specific to individual developer workflows)
+.claude/settings.local.json
+

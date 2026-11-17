@@ -74,7 +74,7 @@ function matchesUrl(regexp) {
 }
 
 function isProductPage() {
-    return matchesUrl(/\/(?:p|l|s)\//g);
+    return matchesUrl(/\/[pls]\//g);
 }
 
 function isListPage() {
@@ -181,7 +181,7 @@ function extractPageData() {
     const hasSelect = hasSelectMembership(loaderData);
 
     if (matchesUrl(/bol\.com\/\w{2}\/\w{2}\/p/g)) return getProductPageData(loaderData, hasSelect);
-    if (matchesUrl(/bol\.com\/\w{2}\/\w{2}\/(?:s|l)/g)) return getListPageData(loaderData, hasSelect);
+    if (matchesUrl(/bol\.com\/\w{2}\/\w{2}\/[sl]/g)) return getListPageData(loaderData, hasSelect);
 
     return [];
 }
@@ -283,7 +283,7 @@ const BADGE_ID = 'emp-discount-badge';
 
 function buildBadgeHtml(items) {
     if (items.length === 1) {
-        const {product, discountSet, price} = items[0];
+        const {discountSet, price} = items[0];
         return `
       <div style="font-size:11px;opacity:0.8;margin-bottom:2px">${discountSet.fullName} — ${discountSet.discount * 100}% off excl. VAT</div>
       <div style="font-size:16px;font-weight:bold">% € ${price.newPriceText}</div>
