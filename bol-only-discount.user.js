@@ -286,7 +286,7 @@ function buildBadgeHtml(items) {
         const {discountSet, price} = items[0];
         return `
       <div style="font-size:11px;opacity:0.8;margin-bottom:2px">${discountSet.fullName} — ${discountSet.discount * 100}% off excl. VAT</div>
-      <div style="font-size:16px;font-weight:bold">% € ${price.newPriceText}</div>
+      <div style="font-size:16px;font-weight:bold">€ ${price.newPriceText}</div>
       <div style="font-size:11px;opacity:0.8;margin-top:2px">${price.percentageText}% vs list price</div>
     `;
     }
