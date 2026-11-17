@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bol Employee Discount
 // @namespace    https://github.com/ralbuh/tampermonkey
-// @version      1.1.0
+// @version      1.1.1
 // @description  Shows estimated employee discount price and adds bol-only products filter on bol.com
 // @author       ralbuh
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/bol-only-discount.user.js
@@ -250,25 +250,25 @@ function injectFilterButton() {
         right: '20px',
         border: '2px solid #0000a4',
         borderRadius: '10px',
-        padding: '10px 18px',
-        background: '#ffffff',
-        color: '#0000a4',
+        padding: '10px 14px',
+        background: '#0000a4',
+        color: '#ffffff',
         fontFamily: 'sans-serif',
         fontSize: '13px',
         fontWeight: 'bold',
         cursor: 'pointer',
         zIndex: '999998',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.35)',
         transition: 'all 0.15s ease',
     });
 
     btn.addEventListener('mouseenter', () => {
-        btn.style.background = '#0000a4';
-        btn.style.color = '#ffffff';
+        btn.style.background = '#00007a';
+        btn.style.borderColor = '#00007a';
     });
     btn.addEventListener('mouseleave', () => {
-        btn.style.background = '#ffffff';
-        btn.style.color = '#0000a4';
+        btn.style.background = '#0000a4';
+        btn.style.borderColor = '#0000a4';
     });
     btn.addEventListener('click', removeNonBol);
 
@@ -314,18 +314,28 @@ function showBadge(items) {
         bottom: bottomOffset,
         right: '20px',
         maxWidth: '260px',
-        background: '#0066cc',
-        color: 'white',
-        padding: '10px 14px',
+        border: '2px solid #0000a4',
         borderRadius: '10px',
+        padding: '10px 14px',
+        background: '#0000a4',
+        color: '#ffffff',
         fontFamily: 'sans-serif',
         fontSize: '13px',
+        lineHeight: '1.4',
+        cursor: 'pointer',
         zIndex: '999999',
         boxShadow: '0 4px 12px rgba(0,0,0,0.35)',
-        cursor: 'pointer',
-        lineHeight: '1.4',
+        transition: 'all 0.15s ease',
     });
     badge.title = 'Estimated employee discount. Click to dismiss.';
+    badge.addEventListener('mouseenter', () => {
+        badge.style.background = '#00007a';
+        badge.style.borderColor = '#00007a';
+    });
+    badge.addEventListener('mouseleave', () => {
+        badge.style.background = '#0000a4';
+        badge.style.borderColor = '#0000a4';
+    });
     badge.addEventListener('click', () => badge.remove());
     document.body.appendChild(badge);
 }
