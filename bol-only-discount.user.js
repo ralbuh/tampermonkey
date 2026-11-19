@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bol Employee Discount
 // @namespace    https://github.com/ralbuh/tampermonkey
-// @version      1.1.1
+// @version      1.1.2
 // @description  Shows estimated employee discount price and adds bol-only products filter on bol.com
 // @author       ralbuh
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/bol-only-discount.user.js
@@ -163,14 +163,31 @@ function getProductPageData(loaderData, hasSelect) {
 }
 
 function getListPageData(loaderData, hasSelect) {
-    const page = loaderData['routes/searchPage'] ?? loaderData['routes/browsePage'];
+    const page = loaderData['routes/searchPage']
+        ?? loaderData['routes/search/searchPage']
+        ?? loaderData['routes/browsePage']
+        ?? loaderData['routes/browse/browsePage'];
     if (!page) return [];
 
     const breadcrumb = page.metaData?.breadCrumb;
-    return page.template.regions[1].slots
-        .filter(slot => slot.type === 'ProductItem')
-        .map(slot => extractProductInfo(slot.props?.product, breadcrumb, hasSelect))
-        .filter(Boolean);
+
+    // Check template slots first (if structured as template.regions)
+    const productItemsFromSlots = page.template?.regions
+        ?.flatMap(region => region.slots ?? [])
+        ?.filter(slot => slot.type === 'ProductItem')
+        ?.map(slot => extractProductInfo(slot.props?.product, breadcrumb, hasSelect))
+        ?.filter(Boolean);
+
+    if (productItemsFromSlots?.length) return productItemsFromSlots;
+
+    // Fallback: direct products array on search/browse loaderData
+    if (Array.isArray(page.products)) {
+        return page.products
+            .map(p => extractProductInfo(p, breadcrumb, hasSelect))
+            .filter(Boolean);
+    }
+
+    return [];
 }
 
 function extractPageData() {
@@ -201,7 +218,6 @@ function computeAllDiscounts() {
 
 // ---------------------------------------------------------------------------
 // Bol-only products filter
-// Source: bolonlyprods.user.js
 // ---------------------------------------------------------------------------
 
 const FILTER_BTN_ID = 'bol-only-filter-btn';
@@ -211,23 +227,90 @@ const SELLER_BOLCOM = 'bol.com';
 const SELLER_BOLCOM_RETOURDEALS = 'bol.com retourdeals';
 
 function isSoldByBol(sellerText) {
-    return sellerText.endsWith(SELLER_BOLCOM)
-        || sellerText.endsWith(SELLER_BOLCOM_RETOURDEALS)
-        || sellerText.endsWith(SELLER_BOL)
-        || (sellerText.includes(SELLER_BOL) && sellerText.includes(SELLER_BOL_RETOURDEALS));
+    const text = sellerText.toLowerCase().trim();
+    return text.endsWith(SELLER_BOLCOM)
+        || text.endsWith(SELLER_BOLCOM_RETOURDEALS)
+        || text.endsWith(SELLER_BOL)
+        || (text.includes(SELLER_BOL) && text.includes(SELLER_BOL_RETOURDEALS));
+}
+
+function findProductContainer(element) {
+    return element.closest('li.product-item--row')
+        || element.closest('[data-bltgi*="ProductList_Middle"]:not([data-bltgi*="banner"])')
+        || element.closest('.\\@container')
+        || element.parentElement;
 }
 
 function removeNonBol() {
+    let removedCount = 0;
+
+    // Strategy 1: Find by React Router loaderData product retailer ID (retailerId === 0 is Bol)
+    try {
+        const router = unsafeWindow.__reactRouterDataRouter;
+        const loaderData = router?.state?.loaderData;
+        const page = loaderData?.['routes/search/searchPage']
+            ?? loaderData?.['routes/searchPage']
+            ?? loaderData?.['routes/browse/browsePage']
+            ?? loaderData?.['routes/browsePage'];
+
+        const products = page?.products;
+        if (Array.isArray(products) && products.length > 0) {
+            products.forEach(p => {
+                const retailerId = parseInt(p.bestSellingOffer?.retailer?.id ?? '-1');
+                if (retailerId !== 0 && p.id) {
+                    const el = document.getElementById(p.id)
+                        || document.querySelector(`[id="${p.id}"]`)
+                        || document.querySelector(`a[href*="${p.id}"]`);
+                    if (el) {
+                        const container = findProductContainer(el);
+                        if (container) {
+                            container.remove();
+                            removedCount++;
+                        }
+                    }
+                }
+            });
+        }
+    } catch (e) {
+        console.error('[bol-only] router state filtering failed:', e);
+    }
+
+    // Strategy 2: DOM-based selector fallback for classic / Polaris lists
     // 1. Classic product rows
     document.querySelectorAll('li.product-item--row').forEach(item => {
         const seller = item.querySelector('div.product-seller');
-        if (seller && !isSoldByBol(seller.textContent.trim())) item.remove();
+        if (seller && !isSoldByBol(seller.textContent.trim())) {
+            item.remove();
+            removedCount++;
+        }
     });
 
     // 2. Polaris/flex product cards
     document.querySelectorAll('[data-bltgi*="ProductList_Middle"]:not([data-bltgi*="banner"])').forEach(item => {
         const seller = item.querySelector('.mt-4');
-        if (seller && !isSoldByBol(seller.textContent.trim())) item.remove();
+        if (seller && !isSoldByBol(seller.textContent.trim())) {
+            item.remove();
+            removedCount++;
+        }
+    });
+
+    // 3. New Tailwind / container product cards: check for "Verkoop door" texts
+    document.querySelectorAll('.\\@container').forEach(item => {
+        const text = item.textContent || '';
+        if (text.includes('Verkoop door') || text.includes('verkoop door:')) {
+            const sellerMatch = text.match(/verkoop door[:\s]*([^\n\r.]+)/i);
+            if (sellerMatch && !isSoldByBol(sellerMatch[1])) {
+                item.remove();
+                removedCount++;
+            }
+        }
+    });
+
+    // Also remove sponsored ad banners in product lists
+    document.querySelectorAll('div.col-span-2.md\\:col-span-3').forEach(item => {
+        if (item.textContent.includes('Gesponsord')) {
+            item.remove();
+        }
     });
 
     const btn = document.getElementById(FILTER_BTN_ID);
