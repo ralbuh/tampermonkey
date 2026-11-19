@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bol Employee Discount
 // @namespace    https://github.com/ralbuh/tampermonkey
-// @version      1.1.2
+// @version      1.2.0
 // @description  Shows estimated employee discount price and adds bol-only products filter on bol.com
 // @author       ralbuh
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/bol-only-discount.user.js
@@ -163,31 +163,13 @@ function getProductPageData(loaderData, hasSelect) {
 }
 
 function getListPageData(loaderData, hasSelect) {
-    const page = loaderData['routes/searchPage']
-        ?? loaderData['routes/search/searchPage']
-        ?? loaderData['routes/browsePage']
-        ?? loaderData['routes/browse/browsePage'];
-    if (!page) return [];
+    const page = loaderData['routes/search/searchPage'] ?? loaderData['routes/browse/browsePage'];
+    if (!page?.products) return [];
 
     const breadcrumb = page.metaData?.breadCrumb;
-
-    // Check template slots first (if structured as template.regions)
-    const productItemsFromSlots = page.template?.regions
-        ?.flatMap(region => region.slots ?? [])
-        ?.filter(slot => slot.type === 'ProductItem')
-        ?.map(slot => extractProductInfo(slot.props?.product, breadcrumb, hasSelect))
-        ?.filter(Boolean);
-
-    if (productItemsFromSlots?.length) return productItemsFromSlots;
-
-    // Fallback: direct products array on search/browse loaderData
-    if (Array.isArray(page.products)) {
-        return page.products
-            .map(p => extractProductInfo(p, breadcrumb, hasSelect))
-            .filter(Boolean);
-    }
-
-    return [];
+    return page.products
+        .map(p => extractProductInfo(p, breadcrumb, hasSelect))
+        .filter(Boolean);
 }
 
 function extractPageData() {
@@ -221,92 +203,38 @@ function computeAllDiscounts() {
 // ---------------------------------------------------------------------------
 
 const FILTER_BTN_ID = 'bol-only-filter-btn';
-const SELLER_BOL = 'bol';
-const SELLER_BOL_RETOURDEALS = 'retourdeals';
-const SELLER_BOLCOM = 'bol.com';
-const SELLER_BOLCOM_RETOURDEALS = 'bol.com retourdeals';
+const FILTER_BTN_TEXT = 'Only Bol own products';
+const FILTER_BTN_FILTERED_TEXT = 'Non-Bol filtered';
 
-function isSoldByBol(sellerText) {
-    const text = sellerText.toLowerCase().trim();
-    return text.endsWith(SELLER_BOLCOM)
-        || text.endsWith(SELLER_BOLCOM_RETOURDEALS)
-        || text.endsWith(SELLER_BOL)
-        || (text.includes(SELLER_BOL) && text.includes(SELLER_BOL_RETOURDEALS));
-}
-
-function findProductContainer(element) {
-    return element.closest('li.product-item--row')
-        || element.closest('[data-bltgi*="ProductList_Middle"]:not([data-bltgi*="banner"])')
-        || element.closest('.\\@container')
-        || element.parentElement;
+function resetFilterButton() {
+    const btn = document.getElementById(FILTER_BTN_ID);
+    if (btn) {
+        btn.textContent = FILTER_BTN_TEXT;
+        btn.style.opacity = '1';
+        btn.style.pointerEvents = 'auto';
+        btn.style.background = '#0000a4';
+        btn.style.borderColor = '#0000a4';
+        btn.style.color = '#ffffff';
+    }
 }
 
 function removeNonBol() {
-    let removedCount = 0;
+    const router = unsafeWindow.__reactRouterDataRouter;
+    const loaderData = router?.state?.loaderData;
+    const page = loaderData?.['routes/search/searchPage'] ?? loaderData?.['routes/browse/browsePage'];
 
-    // Strategy 1: Find by React Router loaderData product retailer ID (retailerId === 0 is Bol)
-    try {
-        const router = unsafeWindow.__reactRouterDataRouter;
-        const loaderData = router?.state?.loaderData;
-        const page = loaderData?.['routes/search/searchPage']
-            ?? loaderData?.['routes/searchPage']
-            ?? loaderData?.['routes/browse/browsePage']
-            ?? loaderData?.['routes/browsePage'];
-
-        const products = page?.products;
-        if (Array.isArray(products) && products.length > 0) {
-            products.forEach(p => {
-                const retailerId = parseInt(p.bestSellingOffer?.retailer?.id ?? '-1');
-                if (retailerId !== 0 && p.id) {
-                    const el = document.getElementById(p.id)
-                        || document.querySelector(`[id="${p.id}"]`)
-                        || document.querySelector(`a[href*="${p.id}"]`);
-                    if (el) {
-                        const container = findProductContainer(el);
-                        if (container) {
-                            container.remove();
-                            removedCount++;
-                        }
-                    }
-                }
-            });
-        }
-    } catch (e) {
-        console.error('[bol-only] router state filtering failed:', e);
+    const products = page?.products;
+    if (Array.isArray(products)) {
+        products.forEach(p => {
+            const retailerId = parseInt(p.bestSellingOffer?.retailer?.id ?? '-1');
+            if (retailerId !== 0 && p.id) {
+                const el = document.getElementById(p.id) || document.querySelector(`a[href*="${p.id}"]`);
+                el?.closest('.\\@container')?.remove();
+            }
+        });
     }
 
-    // Strategy 2: DOM-based selector fallback for classic / Polaris lists
-    // 1. Classic product rows
-    document.querySelectorAll('li.product-item--row').forEach(item => {
-        const seller = item.querySelector('div.product-seller');
-        if (seller && !isSoldByBol(seller.textContent.trim())) {
-            item.remove();
-            removedCount++;
-        }
-    });
-
-    // 2. Polaris/flex product cards
-    document.querySelectorAll('[data-bltgi*="ProductList_Middle"]:not([data-bltgi*="banner"])').forEach(item => {
-        const seller = item.querySelector('.mt-4');
-        if (seller && !isSoldByBol(seller.textContent.trim())) {
-            item.remove();
-            removedCount++;
-        }
-    });
-
-    // 3. New Tailwind / container product cards: check for "Verkoop door" texts
-    document.querySelectorAll('.\\@container').forEach(item => {
-        const text = item.textContent || '';
-        if (text.includes('Verkoop door') || text.includes('verkoop door:')) {
-            const sellerMatch = text.match(/verkoop door[:\s]*([^\n\r.]+)/i);
-            if (sellerMatch && !isSoldByBol(sellerMatch[1])) {
-                item.remove();
-                removedCount++;
-            }
-        }
-    });
-
-    // Also remove sponsored ad banners in product lists
+    // Remove sponsored ad banners in product lists
     document.querySelectorAll('div.col-span-2.md\\:col-span-3').forEach(item => {
         if (item.textContent.includes('Gesponsord')) {
             item.remove();
@@ -315,18 +243,22 @@ function removeNonBol() {
 
     const btn = document.getElementById(FILTER_BTN_ID);
     if (btn) {
-        btn.textContent = 'Non-Bol filtered';
+        btn.textContent = FILTER_BTN_FILTERED_TEXT;
         btn.style.opacity = '0.6';
         btn.style.pointerEvents = 'none';
     }
 }
 
 function injectFilterButton() {
-    if (!isListPage() || document.getElementById(FILTER_BTN_ID)) return;
+    if (!isListPage()) {
+        document.getElementById(FILTER_BTN_ID)?.remove();
+        return;
+    }
+    if (document.getElementById(FILTER_BTN_ID)) return;
 
     const btn = document.createElement('div');
     btn.id = FILTER_BTN_ID;
-    btn.textContent = 'Only Bol own products';
+    btn.textContent = FILTER_BTN_TEXT;
     Object.assign(btn.style, {
         position: 'fixed',
         bottom: '20px',
@@ -346,12 +278,16 @@ function injectFilterButton() {
     });
 
     btn.addEventListener('mouseenter', () => {
-        btn.style.background = '#00007a';
-        btn.style.borderColor = '#00007a';
+        if (btn.style.pointerEvents !== 'none') {
+            btn.style.background = '#00007a';
+            btn.style.borderColor = '#00007a';
+        }
     });
     btn.addEventListener('mouseleave', () => {
-        btn.style.background = '#0000a4';
-        btn.style.borderColor = '#0000a4';
+        if (btn.style.pointerEvents !== 'none') {
+            btn.style.background = '#0000a4';
+            btn.style.borderColor = '#0000a4';
+        }
     });
     btn.addEventListener('click', removeNonBol);
 
@@ -369,7 +305,7 @@ function buildBadgeHtml(items) {
         const {discountSet, price} = items[0];
         return `
       <div style="font-size:11px;opacity:0.8;margin-bottom:2px">${discountSet.fullName} — ${discountSet.discount * 100}% off excl. VAT</div>
-      <div style="font-size:16px;font-weight:bold">€ ${price.newPriceText}</div>
+      <div style="font-size:16px;font-weight:bold">% € ${price.newPriceText}</div>
       <div style="font-size:11px;opacity:0.8;margin-top:2px">${price.percentageText}% vs list price</div>
     `;
     }
@@ -448,10 +384,32 @@ const poll = setInterval(() => {
     if (pollAttempts >= MAX_POLL_ATTEMPTS) clearInterval(poll);
 }, 300);
 
-// Re-run after SPA navigations
-window.addEventListener('popstate', () => {
-    pollAttempts = 0;
-    document.getElementById(BADGE_ID)?.remove();
-    document.getElementById(FILTER_BTN_ID)?.remove();
-    setTimeout(run, 500);
-});
+// ---------------------------------------------------------------------------
+// SPA Navigation detection (pushState, replaceState, popstate)
+// ---------------------------------------------------------------------------
+
+let currentUrl = window.location.href;
+
+function onNavigation() {
+    if (window.location.href !== currentUrl) {
+        currentUrl = window.location.href;
+        resetFilterButton();
+        document.getElementById(BADGE_ID)?.remove();
+        pollAttempts = 0;
+        setTimeout(run, 300);
+    }
+}
+
+const originalPushState = history.pushState;
+history.pushState = function (...args) {
+    originalPushState.apply(this, args);
+    onNavigation();
+};
+
+const originalReplaceState = history.replaceState;
+history.replaceState = function (...args) {
+    originalReplaceState.apply(this, args);
+    onNavigation();
+};
+
+window.addEventListener('popstate', onNavigation);
