@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bol Employee Discount
 // @namespace    https://github.com/ralbuh/tampermonkey
-// @version      1.3.0
+// @version      1.3.1
 // @description  Shows estimated employee discount price and adds bol-only products filter on bol.com
 // @author       ralbuh
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/bol-only-discount.user.js
@@ -360,7 +360,7 @@ function buildBadgeHtml(items) {
     const {discountSet, price} = items[0];
     return `
       <div style="font-size:11px;opacity:0.8;margin-bottom:2px">${discountSet.fullName} — ${discountSet.discount * 100}% off excl. VAT</div>
-      <div style="font-size:16px;font-weight:bold">% € ${price.newPriceText}</div>
+      <div style="font-size:16px;font-weight:bold">€ ${price.newPriceText}</div>
       <div style="font-size:11px;opacity:0.8;margin-top:2px">${price.percentageText}% vs list price</div>
     `;
 }
