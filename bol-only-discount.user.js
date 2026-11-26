@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Bol Employee Discount
 // @namespace    https://github.com/ralbuh/tampermonkey
-// @version      1.2.0
+// @version      1.3.0
 // @description  Shows estimated employee discount price and adds bol-only products filter on bol.com
 // @author       ralbuh
 // @updateURL    https://github.com/ralbuh/tampermonkey/raw/master/bol-only-discount.user.js
@@ -295,25 +295,74 @@ function injectFilterButton() {
 }
 
 // ---------------------------------------------------------------------------
+// List page inline discount price injection
+// ---------------------------------------------------------------------------
+
+const INLINE_PRICE_CLASS = 'emp-discount-inline-price';
+
+function findPriceElement(container) {
+    return container.querySelector('[data-test="price-block"]')
+        || container.querySelector('[data-test="price"]')
+        || container.querySelector('[data-test="selling-price"]')
+        || container.querySelector('[class*="price-block"]')
+        || container.querySelector('[class*="PriceBlock"]')
+        || container.querySelector('.promo-price')
+        || container.querySelector('span[class*="price"]')?.parentElement;
+}
+
+function injectListPagePrices(items) {
+    if (!isListPage()) return;
+
+    items.forEach(({product, discountSet, price}) => {
+        if (!product.id) return;
+
+        const productEl = document.getElementById(product.id)
+            || document.querySelector(`a[href*="${product.id}"]`);
+        if (!productEl) return;
+
+        const container = productEl.closest('.\\@container')
+            || productEl.closest('li.product-item--row')
+            || productEl.closest('[data-bltgi*="ProductList_Middle"]')
+            || productEl.parentElement;
+        if (!container) return;
+
+        // Skip if already injected
+        if (container.querySelector(`.${INLINE_PRICE_CLASS}`)) return;
+
+        const priceEl = findPriceElement(container);
+        if (!priceEl) return;
+
+        const inlineEl = document.createElement('span');
+        inlineEl.className = INLINE_PRICE_CLASS;
+        inlineEl.textContent = ` % € ${price.newPriceText}`;
+        inlineEl.title = `${discountSet.fullName} (${discountSet.discount * 100}% off excl. VAT) — ${price.percentageText}% vs list price`;
+        Object.assign(inlineEl.style, {
+            fontSize: '11px',
+            fontWeight: 'bold',
+            color: '#0000a4',
+            marginLeft: '6px',
+            verticalAlign: 'middle',
+            whiteSpace: 'nowrap',
+            display: 'inline-block',
+        });
+
+        priceEl.appendChild(inlineEl);
+    });
+}
+
+// ---------------------------------------------------------------------------
 // UI — simple floating badge, no external dependencies
 // ---------------------------------------------------------------------------
 
 const BADGE_ID = 'emp-discount-badge';
 
 function buildBadgeHtml(items) {
-    if (items.length === 1) {
-        const {discountSet, price} = items[0];
-        return `
+    const {discountSet, price} = items[0];
+    return `
       <div style="font-size:11px;opacity:0.8;margin-bottom:2px">${discountSet.fullName} — ${discountSet.discount * 100}% off excl. VAT</div>
       <div style="font-size:16px;font-weight:bold">% € ${price.newPriceText}</div>
       <div style="font-size:11px;opacity:0.8;margin-top:2px">${price.percentageText}% vs list price</div>
     `;
-    }
-
-    const rows = items
-        .map(({product, price}) => `<div>€ ${price.newPriceText} — ${product.title.substring(0, 40)}…</div>`)
-        .join('');
-    return `<div style="font-size:12px;font-weight:bold;margin-bottom:4px">% ${items.length} items with discount</div>${rows}`;
 }
 
 function showBadge(items) {
@@ -366,10 +415,13 @@ function showBadge(items) {
 function run() {
     injectFilterButton();
 
-    if (!isProductPage()) return;
-
-    const items = computeAllDiscounts();
-    showBadge(items);
+    if (isProductPage()) {
+        const items = computeAllDiscounts();
+        showBadge(items);
+    } else if (isListPage()) {
+        const items = computeAllDiscounts();
+        injectListPagePrices(items);
+    }
 }
 
 let pollAttempts = 0;
@@ -395,6 +447,7 @@ function onNavigation() {
         currentUrl = window.location.href;
         resetFilterButton();
         document.getElementById(BADGE_ID)?.remove();
+        document.querySelectorAll(`.${INLINE_PRICE_CLASS}`).forEach(el => el.remove());
         pollAttempts = 0;
         setTimeout(run, 300);
     }
